@@ -1,0 +1,4 @@
+05/02/2025 : Première réunion
+- Création du dépôt Github
+- Configuration de R
+- Analyse des bases de données (format, variables, données manquantes)
