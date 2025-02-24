@@ -13,3 +13,8 @@
 - Lucine : relecture et résumé du deuxième article, description des figures, voir la doc de la fonction segmented de Rstudio
 - Marine : mise à jour du journal de bord, description des BD, code de la régression linéaire
 
+24/02/2025 : Marine
+- Mise à jour du journal
+- Dépôt de fichiers sur Github
+- Création du fichier LaTeX sur Overleaf pour le rapport
+- Rédaction de l'introduction et début de description des BD (à finir)
