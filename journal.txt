@@ -2,3 +2,4 @@
 - Création du dépôt Github
 - Configuration de R
 - Analyse des bases de données (format, variables, données manquantes)
+- Test github Marine mac
