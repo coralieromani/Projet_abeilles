@@ -4,6 +4,9 @@
 - Analyse des bases de données (format, variables, données manquantes)
 
 13/02/2025 : Première réunion avec Elodie Brunel-Piccinini
+- Discussion autour des articles
+- Discussion sur ce que l'on a compris et ce qu'il faut revoir/approfondir 
+Tâches à faire la prochaine réunion : 
 - Ré-étudier les articles, les résumer et faire une description des figure
 - Décrire les bases de données (en particulier celle des poids) 
 - Chercher comment faire une régression linéaire sur RStudio 
@@ -15,6 +18,6 @@
 
 24/02/2025 : Marine
 - Mise à jour du journal
-- Dépôt de fichiers sur Github
+- Dépôt de fichiers sur Github (code R données manquantes, update journal.txt)
 - Création du fichier LaTeX sur Overleaf pour le rapport
-- Rédaction de l'introduction et début de description des BD (à finir)
+- Rédaction de l'introduction et  description des BD sur Overleaf
