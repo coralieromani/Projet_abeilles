@@ -2,4 +2,14 @@
 - Création du dépôt Github
 - Configuration de R
 - Analyse des bases de données (format, variables, données manquantes)
-- Test github Marine mac
+
+13/02/2025 : Première réunion avec Elodie Brunel-Piccinini
+- Ré-étudier les articles, les résumer et faire une description des figure
+- Décrire les bases de données (en particulier celle des poids) 
+- Chercher comment faire une régression linéaire sur RStudio 
+
+20/02/2025 : Réunion de répartition des tâches
+- Coralie : relecture et résumé du premier article, description des figures
+- Lucine : relecture et résumé du deuxième article, description des figures, voir la doc de la fonction segmented de Rstudio
+- Marine : mise à jour du journal de bord, description des BD, code de la régression linéaire
+
