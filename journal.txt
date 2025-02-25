@@ -7,7 +7,7 @@
 - Discussion autour des articles
 - Discussion sur ce que l'on a compris et ce qu'il faut revoir/approfondir 
 Tâches à faire la prochaine réunion : 
-- Ré-étudier les articles, les résumer et faire une description des figure
+- Ré-étudier les articles, les résumer et faire une description des figures
 - Décrire les bases de données (en particulier celle des poids) 
 - Chercher comment faire une régression linéaire sur RStudio 
 
@@ -21,3 +21,6 @@ Tâches à faire la prochaine réunion :
 - Dépôt de fichiers sur Github (code R données manquantes, update journal.txt)
 - Création du fichier LaTeX sur Overleaf pour le rapport
 - Rédaction de l'introduction et  description des BD sur Overleaf
+
+25/02/2025 : Coralie
+- Début de la description et du résumé de l'article de William G. Meikle
