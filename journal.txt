@@ -1,0 +1,31 @@
+05/02/2025 : Première réunion
+- Création du dépôt Github
+- Configuration de R
+- Analyse des bases de données (format, variables, données manquantes)
+
+13/02/2025 : Première réunion avec Elodie Brunel-Piccinini
+- Discussion autour des articles
+- Discussion sur ce que l'on a compris et ce qu'il faut revoir/approfondir 
+Tâches à faire pour la prochaine réunion : 
+- Ré-étudier les articles, les résumer et faire une description des figures
+- Décrire les bases de données (en particulier celle des poids) 
+- Chercher comment faire une régression linéaire sur RStudio 
+
+20/02/2025 : Réunion de répartition des tâches
+- Coralie : relecture et résumé du premier article, description des figures
+- Lucine : relecture et résumé du deuxième article, description des figures, voir la doc de la fonction segmented de Rstudio
+- Marine : mise à jour du journal de bord, description des BD, code de la régression linéaire
+
+24/02/2025 : Marine
+- Mise à jour du journal
+- Création du fichier LaTeX sur Overleaf pour le rapport
+- Rédaction de l'introduction et description des BD sur Overleaf
+
+25/02/2025 : Coralie
+- Début de la description et du résumé de l'article de William G. Meikle
+
+27/02/2025 : Lucine 
+- Description et résumé de l'article sur le Breakfast Canyon
+
+28/02/2025 : Marine 
+- Test d'une régression linéaire sur Rstudio pour le poids de la rûche 412 de Confoux le 04/04/23 
