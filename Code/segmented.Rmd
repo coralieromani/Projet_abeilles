@@ -1,0 +1,57 @@
+---
+title: "segmented"
+output: pdf_document
+date: "2025-03-10"
+---
+
+
+
+
+```{r, echo=FALSE, warning=FALSE}
+library(readxl)
+library(ggplot2)
+library(segmented)
+library(gridExtra)
+
+# Charger les données
+poids <- read_excel("Weight_2023_Sica_Confoux.xlsx")
+
+# Créer une liste des noms des ruches (ajuster si nécessaire)
+noms_ruches <- colnames(poids)[2:13]
+
+# Créer une liste vide pour stocker les graphiques
+graphes_ruches <- list()
+
+# Boucle pour créer un graphique pour chaque ruche
+for (ruche in noms_ruches) {
+  
+  # Extraire les données pour la ruche
+  poids_restreint <- poids[as.Date(poids$date) == as.Date("2023-06-04"), c("date", ruche)]
+  
+  # Renommer la colonne de poids
+  colnames(poids_restreint)[2] <- "poids_ruches"
+  
+  # Convertir la date en format numérique
+  poids_restreint$date_num <- as.numeric(poids_restreint$date)
+  
+  # Ajuster un modèle linéaire simple
+  modele <- lm(poids_ruches ~ date_num, data = poids_restreint)
+  
+  # Ajuster le modèle segmenté
+  modele_segmenté <- segmented(modele, seg.Z = ~date_num, npsi = 3)
+  
+  # Créer le graphique
+  graphique <- ggplot(poids_restreint, aes(x = date, y = poids_ruches)) +
+    geom_point() +
+    geom_line() +
+    geom_line(aes(y = predict(modele_segmenté, newdata = poids_restreint)), color = "blue") +
+    geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "red") +  # Régression linéaire globale
+    labs(title = paste(ruche), 
+         x = "Heure", y = "Poids de la ruche") +
+    theme_minimal()
+  
+    print(graphique)
+}
+
+
+```
