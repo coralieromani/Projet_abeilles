@@ -29,3 +29,9 @@ Tâches à faire pour la prochaine réunion :
 
 28/02/2025 : Marine 
 - Test d'une régression linéaire sur Rstudio pour le poids de la rûche 412 de Confoux le 04/04/23 
+
+08/03/2025 : Lucine
+- Prise de connaissance de la fonction 'segmented' de R + code d'une régression linéaire segmentée pour le poids de la rûche 412 de Confoux le 04/04/23
+
+10/03/2025 : Réunion de groupe
+- code de régression linéaire segmentée pour chaque rûche à la date du 04 juin 2023
