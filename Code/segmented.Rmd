@@ -14,7 +14,7 @@ library(segmented)
 library(gridExtra)
 
 # Charger les données
-poids <- read_excel("Weight_2023_Sica_Confoux.xlsx")
+poids <- read_excel("../../Weight_2023_Sica_Confoux.xlsx")
 
 # Créer une liste des noms des ruches (ajuster si nécessaire)
 noms_ruches <- colnames(poids)[2:13]
@@ -53,5 +53,58 @@ for (ruche in noms_ruches) {
     print(graphique)
 }
 
+
+```
+
+
+# Graphique du poids moyen de la ruche 412 Confoux sur les 04/05 avril 2023
+
+```{r, echo=FALSE, warning=FALSE}
+library(readxl)
+library(ggplot2)
+library(segmented)
+
+# Charger les données
+poids <- read_excel("../../Weight_2023_Sica_Confoux.xlsx")
+
+# Poids de la ruche 412 pour le 04 avril 2023
+poids_restreint <- poids[as.Date(poids$date) %in% as.Date(c("2023-04-04", "2023-04-05")) &
+                         format(poids$date, "%M") == "00", 
+                         c("date", 'Domaine de Confoux (BeeRisk) - Poids de la ruche « Ruche 412 »')]
+
+# Renommer la colonne
+colnames(poids_restreint)[2] <- "poids_ruche412"
+
+# Convertir la date en format numérique pour l'utiliser dans la régression
+poids_restreint$date_num <- as.numeric(poids_restreint$date)
+
+# Convertir la colonne date en format POSIXct pour extraire l'heure
+poids_restreint$date <- as.POSIXct(poids_restreint$date)
+
+# Extraire l'heure de la date
+poids_restreint$heure <- format(poids_restreint$date, "%H:%M")
+
+# Calculer le poids moyen par heure en regroupant par heure
+poids_moyen_par_heure <- aggregate(poids_ruche412 ~ heure, data = poids_restreint, FUN = mean)
+
+# Renommer la colonne pour plus de clarté
+colnames(poids_moyen_par_heure)[2] <- "poids_moyen"
+
+# Extraire l'heure avant les deux-points et convertir en numérique
+poids_moyen_par_heure$date_num2 <- as.numeric(sub(":[0-9]+", "", poids_moyen_par_heure$heure))
+
+# Ajuster un modèle linéaire simple
+modele <- lm(poids_moyen ~ date_num2, data = poids_moyen_par_heure)
+
+# Ajuster le modèle linéaire segmenté (ajuster la rupture)
+modele_segmenté <- segmented(modele, seg.Z = ~date_num2, npsi = 3)
+
+# Tracer le graphique avec la régression linéaire segmentée
+ggplot(poids_moyen_par_heure, aes(x = date_num2, y = poids_moyen)) +
+  geom_line(color = "black") +  # Ligne pour la courbe des données
+  geom_line(aes(y = predict(modele_segmenté, newdata = poids_moyen_par_heure)), color = "blue") + # Régression linéaire segmentée
+  labs(title = "Moyenne du poids de la ruche 412 sur les 04 et 05 avril 2023", x = "Heure", y = "Poids de la ruche") +
+  scale_x_continuous(labels = function(x) format(as.POSIXct(x * 3600, origin = "1970-01-01"), "%H:%M")) + # Conversion pour afficher l'heure
+  theme_minimal()
 
 ```
