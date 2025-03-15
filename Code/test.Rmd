@@ -1,0 +1,109 @@
+---
+title: "segmented"
+output: pdf_document
+date: "2025-03-05"
+---
+
+```{r, warning=FALSE}
+# Génération de données simulées
+x <- 1:100
+y <- 2 + 1.5 * pmax(x - 35, 0) - 1.5 * pmax(x - 70, 0) + rnorm(100, 0, 2)
+
+# Ajustement d'un modèle linéaire initial
+mod_lm <- lm(y ~ x)
+
+# Ajustement du modèle segmenté avec deux points de rupture initiaux à 30 et 60
+library(segmented)
+mod_seg <- segmented(mod_lm, seg.Z = ~x, psi = c(30, 60))
+
+# Affichage des résultats
+plot(mod_seg)
+
+```
+
+
+```{r warning=FALSE}
+library(segmented)
+
+# Génération des données
+x <- 1:50
+y <- 2 + 1.5 * pmax(x - 20, 0) - 1.5 * pmax(x - 40, 0) + rnorm(50, 0, 3)
+
+# Ajustement du modèle linéaire et segmenté
+mod_lm <- lm(y ~ x)
+mod_seg <- segmented(mod_lm, seg.Z = ~x, npsi = 4)
+
+# Tracé du modèle segmenté
+plot(x, y, main = "Ajustement du modèle segmenté", pch = 19, col = "blue")
+lines(x, fitted(mod_lm), col = "red", lwd = 2, lty = 2)  # Ajustement linéaire simple
+lines(x, fitted(mod_seg), col = "green", lwd = 2)  # Ajustement segmenté
+
+# Ajout des points de rupture
+breakpoints <- mod_seg$psi[, "Est."]  # Extraction des valeurs estimées
+points(breakpoints, predict(mod_seg, newdata = data.frame(x = breakpoints)), 
+       col = "red", pch = 16, cex = 1.5)  # Points de rupture
+
+print(breakpoints)
+```
+
+
+```{r, warning=FALSE}
+anova(mod_lm, mod_seg)
+confint(mod_seg)
+
+```
+
+```{r, warning=FALSE}
+
+# Modèle linéaire simple
+mod_lm <- lm(y ~ x)
+
+# Estimation automatique des points de rupture (ici, le package choisira le nombre de ruptures)
+mod_seg_auto <- segmented(mod_lm, seg.Z = ~x)
+
+# Résumé du modèle segmenté
+plot(mod_seg_auto)
+
+```
+
+
+On peut choisir le nombre de beaking points nous oushaitons et il nous les évalue.
+
+```{r, warning=FALSE}
+# Estimation avec un nombre fixe de points de rupture (ici 1 rupture)
+mod_seg_1 <- segmented(mod_lm, seg.Z = ~x, npsi = 2)
+
+# Résumé du modèle segmenté
+plot(mod_seg_1)
+
+```
+
+```{r, warning=FALSE}
+# Modèle avec 1 rupture
+mod_seg_1 <- segmented(mod_lm, seg.Z = ~x, npsi = 1)
+
+# Modèle avec 2 ruptures
+mod_seg_2 <- segmented(mod_lm, seg.Z = ~x, npsi = 2)
+
+# Comparaison des modèles avec AIC
+AIC(mod_seg_1, mod_seg_2)
+
+```
+Le modèle avec le plus faible AIC sera généralement celui qui ajuste le mieux les données, tout en évitant le sur-ajustement.
+
+```{r, warning=FALSE}
+
+```
+
+
+```{r, warning=FALSE}
+
+```
+
+```{r, warning=FALSE}
+
+```
+
+```{r, warning=FALSE}
+
+```
