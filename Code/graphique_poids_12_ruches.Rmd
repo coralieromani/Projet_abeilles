@@ -1,0 +1,44 @@
+---
+title: "graphique du poids de toutes les ruches"
+output: pdf_document
+date: "2025-03-18"
+---
+
+```{r}
+library(readxl)
+library(ggplot2)
+library(segmented)
+library(gridExtra)
+
+# Charger les données
+poids <- read_excel("BD/Weight_2023_Sica_Confoux.xlsx")
+
+# Créer une liste des noms des ruches (ajuster si nécessaire)
+noms_ruches <- colnames(poids)[2:13]
+
+# Créer un graphique global
+graphique_global <- ggplot()
+
+# Boucle pour ajouter les données de chaque ruche
+for (ruche in noms_ruches) {
+  
+  # Extraire les données pour la ruche
+  poids_restreint <- poids[as.Date(poids$date) == as.Date("2023-04-06"), c("date", ruche)]
+  
+  # Renommer la colonne de poids
+  colnames(poids_restreint)[2] <- "poids_ruches"
+  
+  # Convertir la date en format numérique
+  poids_restreint$date_num <- as.numeric(poids_restreint$date)
+  
+  # Ajouter les points et les courbes au graphique global
+  graphique_global <- graphique_global +
+    geom_point(data = poids_restreint, aes(x = date, y = poids_ruches))  # Points pour chaque ruche
+    
+}
+
+# Afficher le graphique global
+print(graphique_global)
+
+
+```
