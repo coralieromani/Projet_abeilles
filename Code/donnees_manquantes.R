@@ -8,7 +8,7 @@ library(tidyr)
 library(openxlsx)
 library(lubridate)
 
-confoux <- read_excel("Activity_Confoux_2023.xlsx")
+confoux <- read_excel("BD/Activity_Confoux_2023.xlsx")
 
 # Supprimer les minutes et secondes en arrondissant à l'heure
 confoux$date <- parse_date_time(confoux$date, orders = c("ymd HMS", "ymd HM", "dmy HMS", "dmy HM"))
