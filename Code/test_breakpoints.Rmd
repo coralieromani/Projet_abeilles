@@ -4,24 +4,6 @@ output: pdf_document
 date: "2025-03-05"
 ---
 
-```{r, warning=FALSE}
-# Génération de données simulées
-x <- 1:100
-y <- 2 + 1.5 * pmax(x - 35, 0) - 1.5 * pmax(x - 70, 0) + rnorm(100, 0, 2)
-
-# Ajustement d'un modèle linéaire initial
-mod_lm <- lm(y ~ x)
-
-# Ajustement du modèle segmenté avec deux points de rupture initiaux à 30 et 60
-library(segmented)
-mod_seg <- segmented(mod_lm, seg.Z = ~x, psi = c(30, 60))
-
-# Affichage des résultats
-plot(mod_seg)
-
-```
-
-
 ```{r warning=FALSE}
 library(segmented)
 
@@ -48,28 +30,6 @@ print(breakpoints)
 
 
 ```{r, warning=FALSE}
-anova(mod_lm, mod_seg)
-confint(mod_seg)
-
-```
-
-```{r, warning=FALSE}
-
-# Modèle linéaire simple
-mod_lm <- lm(y ~ x)
-
-# Estimation automatique des points de rupture (ici, le package choisira le nombre de ruptures)
-mod_seg_auto <- segmented(mod_lm, seg.Z = ~x)
-
-# Résumé du modèle segmenté
-plot(mod_seg_auto)
-
-```
-
-
-On peut choisir le nombre de beaking points nous oushaitons et il nous les évalue.
-
-```{r, warning=FALSE}
 # Estimation avec un nombre fixe de points de rupture (ici 1 rupture)
 mod_seg_1 <- segmented(mod_lm, seg.Z = ~x, npsi = 2)
 
@@ -91,19 +51,4 @@ AIC(mod_seg_1, mod_seg_2)
 ```
 Le modèle avec le plus faible AIC sera généralement celui qui ajuste le mieux les données, tout en évitant le sur-ajustement.
 
-```{r, warning=FALSE}
 
-```
-
-
-```{r, warning=FALSE}
-
-```
-
-```{r, warning=FALSE}
-
-```
-
-```{r, warning=FALSE}
-
-```
