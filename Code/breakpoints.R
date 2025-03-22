@@ -1,6 +1,7 @@
 library(readxl)
 library(segmented)
 library(dplyr)
+library(ggplot2)
 
 # Charger les données
 poids_ruches <- read_excel("BD/Weight_2023_Sica_Confoux.xlsx")
@@ -15,10 +16,11 @@ poids_moyen <- data.frame(date = poids_ruches$date, heure = poids_ruches$heure, 
 
 # Initialiser une table vide pour stocker les breakpoints
 breakpoints_table <- data.frame(
-  BP_1 = character(), 
-  poids_BP_1 = numeric(), 
-  BP_2 = character(), 
-  poids_BP_2 = numeric(), 
+  date = as.Date(NA),
+  BP_1 = character(1), 
+  poids_BP_1 = numeric(1), 
+  BP_2 = character(1), 
+  poids_BP_2 = numeric(1), 
   stringsAsFactors = FALSE
 )
 
@@ -56,13 +58,13 @@ for (i in unique(poids_moyen$date)) {
   breakpoints_table <- rbind(
     breakpoints_table, 
     data.frame(
+      date = as.Date(i),
       BP_1 = BP_1_time, 
       poids_BP_1 = ordonnee_1, 
       BP_2 = BP_2_time, 
       poids_BP_2 = ordonnee_2
     )
   )
-  rownames(breakpoints_table)[nrow(breakpoints_table)] <- as.character(as.Date(i))
 }
 
 
@@ -79,3 +81,12 @@ for (i in jours_erreurs) {
   plot(erreur$heure, erreur$poids, type = "b", main = paste("Régression segmentée le", i), xlab = "Heure", ylab = "Poids")
   lines(erreur$heure, predict(modele_seg), col = "red", lwd = 2)
 }
+
+
+ggplot(breakpoints_table) +
+  geom_point(aes(x = date, y = poids_BP_1, color = "BP_1"), alpha = 1) +
+  geom_point(aes(x = date, y = poids_BP_2, color = "BP_2"), alpha = 1) +
+  labs(title = "Évolution des breakpoints", x = "Temps", y = "Poids") +
+  scale_y_continuous(limits = c(35, 55)) +
+  scale_color_manual(values = c("BP_1" = "blue", "BP_2" = "orange"), name = "Breakpoints") +  
+  theme_minimal()
