@@ -11,16 +11,16 @@ poids_ruches$date <- as.Date(poids_ruches$date)
 poids_ruches <- poids_ruches %>%
   filter(date >="2023-04-04" & date <= "2023-11-23")
 
-poids_moyen <- data.frame(date = poids_ruches$date, heure = poids_ruches$heure, poids = rowMeans(poids_ruches[, -c(1, ncol(poids_ruches))], na.rm = TRUE)) 
-
+poids_moyen <- data.frame(date = poids_ruches$date, heure = poids_ruches$heure, poids = rowMeans(poids_ruches[, -c(1, ncol(poids_ruches))], na.rm = TRUE))
+# 
 
 # Initialiser une table vide pour stocker les breakpoints
 breakpoints_table <- data.frame(
   date = as.Date(NA),
-  BP_1 = character(1), 
-  poids_BP_1 = numeric(1), 
-  BP_2 = character(1), 
-  poids_BP_2 = numeric(1), 
+  BP_1 = character(1),
+  poids_BP_1 = numeric(1),
+  BP_2 = character(1),
+  poids_BP_2 = numeric(1),
   stringsAsFactors = FALSE
 )
 
@@ -28,40 +28,40 @@ jours_erreurs <- list()
 
 for (i in unique(poids_moyen$date)) {
   poids_jour <- subset(poids_moyen, date == i)
-  
+
   modele <- lm(poids ~ heure, data = poids_jour)
-  
+
   modele_seg <- try(segmented(modele, seg.Z = ~heure, psi = c(400,800)), silent = TRUE)
-  
+
   breakpoints <- modele_seg$psi[, "Est."]
-  
+
   # Si on n'a pas obtenu 2 breakpoints, on passe ce jour
   if (length(breakpoints) < 2) {
     message(paste("Moins de 2 breakpoints estimés pour le jour:", i))
     jours_erreurs <<- append(jours_erreurs, as.character(as.Date(i)))
     next
   }
-  
+
   format_time <- function(minutes) {
     hours <- floor(as.integer(minutes) / 60)  # Conversion explicite en entier
     mins <- as.integer(minutes) %% 60        # Conversion explicite en entier
     return(sprintf("%02d:%02d", hours, mins))
   }
-  
-  
+
+
   BP_1_time <- format_time(breakpoints[1])
   BP_2_time <- format_time(breakpoints[2])
-  
+
   ordonnee_1 <- predict(modele_seg, newdata = data.frame(heure = breakpoints[1]))
   ordonnee_2 <- predict(modele_seg, newdata = data.frame(heure = breakpoints[2]))
-  
+
   breakpoints_table <- rbind(
-    breakpoints_table, 
+    breakpoints_table,
     data.frame(
       date = as.Date(i),
-      BP_1 = BP_1_time, 
-      poids_BP_1 = ordonnee_1, 
-      BP_2 = BP_2_time, 
+      BP_1 = BP_1_time,
+      poids_BP_1 = ordonnee_1,
+      BP_2 = BP_2_time,
       poids_BP_2 = ordonnee_2
     )
   )
@@ -70,7 +70,7 @@ for (i in unique(poids_moyen$date)) {
 breakpoints_table <- breakpoints_table %>%
   slice(-1)
 
-test <- subset(poids_moyen, date == "2023-05-06")
+test <- subset(poids_moyen, date == "2023-05-10")
 modele <- lm(poids ~ heure, data = test)
 modele_seg <- segmented(modele, seg.Z = ~heure, npsi = 2)
 plot(test$heure, test$poids, type = "b", main = paste("Régression segmentée le 2023-05-06"), xlab = "Heure", ylab = "Poids")
@@ -90,7 +90,7 @@ ggplot(breakpoints_table) +
   geom_point(aes(x = date, y = poids_BP_2, color = "BP_2"), alpha = 1) +
   labs(title = "Évolution des breakpoints", x = "Temps", y = "Poids") +
   scale_y_continuous(limits = c(35, 55)) +
-  scale_color_manual(values = c("BP_1" = "blue", "BP_2" = "orange"), name = "Breakpoints") +  
+  scale_color_manual(values = c("BP_1" = "blue", "BP_2" = "orange"), name = "Breakpoints") +
   theme_minimal()
 
 #Conversion des heures:minutes en heures (ex: 07:30 devient 7,5)
@@ -102,11 +102,10 @@ BP_2_numeric <- as.numeric(substr(breakpoints_table$BP_2, 1, 2)) +
 lm_BP1 <- lm(BP_1_numeric ~ as.numeric(date), data = breakpoints_table)
 lm_BP2 <- lm(BP_2_numeric ~ as.numeric(date), data = breakpoints_table)
 
-#tracé de la tendance en rouge
+#Droites de régression pour les breakpoints 1 et 2
 BP_1_trend <- predict(lm_BP1, newdata = breakpoints_table)
 BP_2_trend <- predict(lm_BP2, newdata = breakpoints_table)
 
-# Tracé du graphique
 ggplot(breakpoints_table, aes(x = date)) +
   geom_point(aes(y = BP_1_numeric, color = "Breakpoint 1")) +
   geom_point(aes(y = BP_2_numeric, color = "Breakpoint 2")) +
@@ -117,17 +116,28 @@ ggplot(breakpoints_table, aes(x = date)) +
   scale_color_manual(values = c("Breakpoint 1" = "green", "Breakpoint 2" = "pink"), name = "Breakpoints") +
   theme_minimal()
 
+#calcul des pentes
 breakpoints_table <- breakpoints_table %>%
-  mutate(variation_poids = (poids_BP_2 - poids_BP_1) / (BP_2_numeric - BP_1_numeric))  # Variation du poids par heure
+  mutate(variation_poids = (poids_BP_2 - poids_BP_1) / (BP_2_numeric - BP_1_numeric))
 
-ggplot(breakpoints_table, aes(x = date, y = variation_poids)) + 
-  geom_point(color = "blue") +  # Afficher des points pour chaque observation
-  geom_line(aes(group = 1), color = "red") +  # Ajouter une ligne pour connecter les points
-  labs(title = "Variation du poids des rûches en fonction des jours", 
-       x = "Jour", 
+ggplot(breakpoints_table, aes(x = date, y = variation_poids)) +
+  geom_point(color = "blue") +
+  labs(title = "Variation du poids des rûches en fonction des jours",
+       x = "Jour",
        y = "Variation du poids") +
-  scale_y_continuous(breaks = seq(min(breakpoints_table$variation_poids), 
-                                  max(breakpoints_table$variation_poids), 
-                                  by = 1)) + 
+  scale_y_continuous(breaks = seq(min(breakpoints_table$variation_poids),
+                                  max(breakpoints_table$variation_poids),
+                                  by = 1)) +
   theme_minimal()
+
+#REMARQUES: variations étonnantes pour certaine journées
+  #le 10/05/2023 : -2,46g  (1h01 et 3g environ)
+  #le 18/09/2023 : -7,46g (ici on a une grande différence de poids entre les 2 BP : 1h07 pour 8,5g)
+  #le 26/10/2023 : + 2,87g (1h24 et 3,3g environ)
+  
+# test2 <- subset(poids_moyen, date == "2023-09-18")
+# modele <- lm(poids ~ heure, data = test)
+# modele_seg <- segmented(modele, seg.Z = ~heure, npsi = 2)
+# plot(test$heure, test$poids, type = "b", main = paste("Régression segmentée le 18/09/2023"), xlab = "Heure", ylab = "Poids")
+# lines(test$heure, predict(modele_seg), col = "red", lwd = 2)
 
