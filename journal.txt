@@ -35,3 +35,34 @@ Tâches à faire pour la prochaine réunion :
 
 10/03/2025 : Réunion de groupe
 - code de régression linéaire segmentée pour chaque rûche à la date du 04 juin 2023
+
+13/03/2025 : Réunion avec Elodie Brunel_Piccinini
+Bilan et tâches à faire : 
+- revoir la fonction segmented et la documenter
+- résoudre le problème des breakpoints que l'on arrive pas à fixer
+- chercher comment récuperer les coordonnées des breakpoints
+- forcer l'affichage des breakpoints sur des graphes simples
+- faire un graphe de RLS avec les poids 12 rûches et non les moyennes
+
+18/03/2025 : Réunion de groupe 
+Coralie : recherche dans le code des articles pour régler le problème des breakpoints
+Lucine : graphe de RLS avec les poids des 12 rûches
+Marine : rédaction du rapport, documentation de segmented
+
+20/03/2025 : Réunion avec Elodie Brunel-Piccinini
+Bilan et tâches à faire : 
+- faire un boxplot des poids des rûches
+- récuperer les coordonnées des breakpoints 1 et 2 dans un tableau
+- faire un graphe des heures des breakpoints 1 et 2 + un graphe de variation du poids des rûches
+- refaire le début du rapport
+
+22/03/2025 Coralie : 
+- boxplot des poids des 12 rûches
+- classification des coordonnées des breakpoints 1 et 2 dans un tableau
+
+23/03/2025 Marine : 
+- tracé des graphes des breakpoints à partir du code et du tableau de Coralie
+
+23/03/2025 Lucine : 
+- Compléte et arrange le rapport de projet
+
