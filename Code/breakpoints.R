@@ -67,11 +67,13 @@ for (i in unique(poids_moyen$date)) {
   )
 }
 
+breakpoints_table <- breakpoints_table %>%
+  slice(-1)
 
 test <- subset(poids_moyen, date == "2023-05-06")
 modele <- lm(poids ~ heure, data = test)
 modele_seg <- segmented(modele, seg.Z = ~heure, npsi = 2)
-plot(test$heure, test$poids, type = "b", main = paste("Régression segmentée le 2023-04-06"), xlab = "Heure", ylab = "Poids")
+plot(test$heure, test$poids, type = "b", main = paste("Régression segmentée le 2023-05-06"), xlab = "Heure", ylab = "Poids")
 lines(test$heure, predict(modele_seg), col = "red", lwd = 2)
 
 for (i in jours_erreurs) {
@@ -90,3 +92,42 @@ ggplot(breakpoints_table) +
   scale_y_continuous(limits = c(35, 55)) +
   scale_color_manual(values = c("BP_1" = "blue", "BP_2" = "orange"), name = "Breakpoints") +  
   theme_minimal()
+
+#Conversion des heures:minutes en heures (ex: 07:30 devient 7,5)
+BP_1_numeric <- as.numeric(substr(breakpoints_table$BP_1, 1, 2)) +
+  as.numeric(substr(breakpoints_table$BP_1, 4, 5)) / 60
+BP_2_numeric <- as.numeric(substr(breakpoints_table$BP_2, 1, 2)) +
+  as.numeric(substr(breakpoints_table$BP_2, 4, 5)) / 60
+
+lm_BP1 <- lm(BP_1_numeric ~ as.numeric(date), data = breakpoints_table)
+lm_BP2 <- lm(BP_2_numeric ~ as.numeric(date), data = breakpoints_table)
+
+#tracé de la tendance en rouge
+BP_1_trend <- predict(lm_BP1, newdata = breakpoints_table)
+BP_2_trend <- predict(lm_BP2, newdata = breakpoints_table)
+
+# Tracé du graphique
+ggplot(breakpoints_table, aes(x = date)) +
+  geom_point(aes(y = BP_1_numeric, color = "Breakpoint 1")) +
+  geom_point(aes(y = BP_2_numeric, color = "Breakpoint 2")) +
+  geom_line(aes(y = BP_1_trend), linetype = "solid", col = 'red', size=1) +
+  geom_line(aes(y = BP_2_trend), linetype = "solid", col = 'red', size=1) +
+  labs(title = "Comparaison des breakpoints 1 et 2", x = "Jour", y = "Heure") +
+  scale_y_continuous(breaks = seq(0, 24, by = 1), limits = c(0, 24)) +
+  scale_color_manual(values = c("Breakpoint 1" = "green", "Breakpoint 2" = "pink"), name = "Breakpoints") +
+  theme_minimal()
+
+breakpoints_table <- breakpoints_table %>%
+  mutate(variation_poids = (poids_BP_2 - poids_BP_1) / (BP_2_numeric - BP_1_numeric))  # Variation du poids par heure
+
+ggplot(breakpoints_table, aes(x = date, y = variation_poids)) + 
+  geom_point(color = "blue") +  # Afficher des points pour chaque observation
+  geom_line(aes(group = 1), color = "red") +  # Ajouter une ligne pour connecter les points
+  labs(title = "Variation du poids des rûches en fonction des jours", 
+       x = "Jour", 
+       y = "Variation du poids") +
+  scale_y_continuous(breaks = seq(min(breakpoints_table$variation_poids), 
+                                  max(breakpoints_table$variation_poids), 
+                                  by = 1)) + 
+  theme_minimal()
+
