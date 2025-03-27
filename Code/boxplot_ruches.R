@@ -1,6 +1,7 @@
 library(ggplot2)
 library(tidyr)
 library(dplyr)
+library(readxl)
 
 # Charger les données
 poids_ruches <- read_excel("BD/Weight_2023_Sica_Confoux.xlsx")
