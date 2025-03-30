@@ -5,14 +5,22 @@ library(ggplot2)
 
 # Charger les données
 poids_ruches <- read_excel("BD/Weight_2023_Sica_Confoux.xlsx")
-poids_ruches$date <- as.POSIXct(poids_ruches$date,format = "%Y-%m-%d %H:%M:%S")
-poids_ruches$heure <- as.numeric(format(poids_ruches$date, "%H")) * 60 + as.numeric(format(poids_ruches$date, "%M"))
-poids_ruches$date <- as.Date(poids_ruches$date)
-poids_ruches <- poids_ruches %>%
+colnames(poids_ruches) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435",
+                            "Confoux - 430", "Confoux - 404", "Confoux - 405",
+                            "Sica - 415", "Sica - 428", "Sica - 444",
+                            "Sica - 412", "Sica - Y", "Sica - 89")
+
+poids_sica <- poids_ruches %>%
+  select(1,(ncol(poids_ruches)-5):ncol(poids_ruches))
+
+poids_sica$date <- as.POSIXct(poids_sica$date,format = "%Y-%m-%d %H:%M:%S")
+poids_sica$heure <- as.numeric(format(poids_sica$date, "%H")) * 60 + as.numeric(format(poids_sica$date, "%M"))
+poids_sica$date <- as.Date(poids_sica$date)
+poids_sica <- poids_sica %>%
   filter(date >="2023-04-04" & date <= "2023-11-23")
 
-poids_moyen <- data.frame(date = poids_ruches$date, heure = poids_ruches$heure, poids = rowMeans(poids_ruches[, -c(1, ncol(poids_ruches))], na.rm = TRUE))
-# 
+poids_moyen <- data.frame(date = poids_sica$date, heure = poids_sica$heure, poids = rowMeans(poids_sica[, -c(1, ncol(poids_sica))], na.rm = TRUE))
+#
 
 # Initialiser une table vide pour stocker les breakpoints
 breakpoints_table <- data.frame(
@@ -116,28 +124,49 @@ ggplot(breakpoints_table, aes(x = date)) +
   scale_color_manual(values = c("Breakpoint 1" = "green", "Breakpoint 2" = "pink"), name = "Breakpoints") +
   theme_minimal()
 
-#calcul des pentes
 breakpoints_table <- breakpoints_table %>%
   mutate(variation_poids = (poids_BP_2 - poids_BP_1) / (BP_2_numeric - BP_1_numeric))
 
+breakpoints_table_filtre <- breakpoints_table %>%
+  filter(!date %in% as.Date(c("2023-05-10", "2023-09-18","2023-10-26")))
+
+BP_1_numeric_f <- as.numeric(substr(breakpoints_table_filtre$BP_1, 1, 2)) +
+  as.numeric(substr(breakpoints_table_filtre$BP_1, 4, 5)) / 60
+BP_2_numeric_f <- as.numeric(substr(breakpoints_table_filtre$BP_2, 1, 2)) +
+  as.numeric(substr(breakpoints_table_filtre$BP_2, 4, 5)) / 60
+
+#calcul des pentes
+breakpoints_table_filtre <- breakpoints_table_filtre %>%
+  mutate(variation_poids = (poids_BP_2 - poids_BP_1) / (BP_2_numeric_f - BP_1_numeric_f))
+
 ggplot(breakpoints_table, aes(x = date, y = variation_poids)) +
   geom_point(color = "blue") +
-  labs(title = "Variation du poids des rûches en fonction des jours",
-       x = "Jour",
-       y = "Variation du poids") +
+  labs(x = "Jour", y = "Pente en gramme par heure") +
   scale_y_continuous(breaks = seq(min(breakpoints_table$variation_poids),
                                   max(breakpoints_table$variation_poids),
                                   by = 1)) +
   theme_minimal()
 
 #REMARQUES: variations étonnantes pour certaine journées
-  #le 10/05/2023 : -2,46g  (1h01 et 3g environ)
-  #le 18/09/2023 : -7,46g (ici on a une grande différence de poids entre les 2 BP : 1h07 pour 8,5g)
-  #le 26/10/2023 : + 2,87g (1h24 et 3,3g environ)
-  
+#le 10/05/2023 : -2,46g  (1h01 et 3g environ)
+#le 18/09/2023 : -7,46g (ici on a une grande différence de poids entre les 2 BP : 1h07 pour 8,5g)
+#le 26/10/2023 : + 2,87g (1h24 et 3,3g environ)
+
 # test2 <- subset(poids_moyen, date == "2023-09-18")
 # modele <- lm(poids ~ heure, data = test)
 # modele_seg <- segmented(modele, seg.Z = ~heure, npsi = 2)
 # plot(test$heure, test$poids, type = "b", main = paste("Régression segmentée le 18/09/2023"), xlab = "Heure", ylab = "Poids")
 # lines(test$heure, predict(modele_seg), col = "red", lwd = 2)
+
+#enlever les 3 valeurs extrêmes et refaire le graphe + rajouter la RL:
+
+ggplot(breakpoints_table_filtre, aes(x = date, y = variation_poids)) +
+  geom_point(color = "blue", size = 1) +
+  geom_smooth(method = "lm", color = "red", se = FALSE) +
+  labs(x = "Jour", y = "Pente en gramme par heure") +
+  scale_y_continuous(breaks = c(0,seq(from = min(breakpoints_table_filtre$variation_poids),
+                                  to = max(breakpoints_table_filtre$variation_poids),
+                                  by = 1))) +
+  theme_minimal()
+
 
