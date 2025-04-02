@@ -1,0 +1,213 @@
+---
+title: "entrees_sorties_abeilles"
+output: html_document
+date: "2025-04-02"
+---
+
+```{r, warning=FALSE}
+library(readxl)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+# Charger les données
+sica <- read_excel("Projet_abeilles/BD/Activity_Sica_2023.xlsx")
+
+# Transformer les données en format long
+sica_long <- sica %>%
+  pivot_longer(cols = -date, names_to = "type", values_to = "valeur") %>%
+  mutate(
+    ruche = sub("CPT_|-entrées|-sorties", "", type),  # Extraire le numéro de ruche
+    mouvement = ifelse(grepl("entrées", type), "Entrées", "Sorties")  # Identifier entrées/sorties
+  )
+
+# Filtrer pour la date du 3 mai 2023
+sica_13octobre <- sica_long %>%
+  filter(as.Date(date) == as.Date("2023-10-13"))
+
+# Création du graphique
+graphique_global <- ggplot(sica_13octobre, aes(x = date, y = valeur, color = ruche)) +
+  geom_point(aes(shape = mouvement), size = 1.5) +
+  scale_shape_manual(values = c("Entrées" = 7, "Sorties" = 16)) +  # Légende simplifiée
+  scale_color_brewer(palette = "Paired", guide = "none") +  # Utilisation d'une palette avec plus de couleurs
+  labs(title = "Activité des ruches le 13 octobre  2023",
+       x = "Date",
+       y = "Nombre d'entrées/sorties",
+       shape = "Mouvement") +
+  theme_minimal()
+
+# Afficher le graphique
+print(graphique_global)
+
+
+# Filtrer pour la date du 3 mai 2023
+sica_10avril <- sica_long %>%
+  filter(as.Date(date) == as.Date("2023-04-10"))
+
+# Création du graphique
+graphique_global2 <- ggplot(sica_10avril, aes(x = date, y = valeur, color = ruche)) +
+  geom_point(aes(shape = mouvement), size = 1.5) +
+  scale_shape_manual(values = c("Entrées" = 7, "Sorties" = 16)) +  # Légende simplifiée
+  scale_color_brewer(palette = "Paired", guide = "none") +  # Utilisation d'une palette avec plus de couleurs
+  labs(title = "Activité des ruches le 10 avril 2023",
+       x = "Date",
+       y = "Nombre d'entrées/sorties",
+       shape = "Mouvement") +
+  theme_minimal()
+
+# Afficher le graphique
+print(graphique_global2)
+
+
+
+```
+
+```{r, warning=FALSE}
+library(readxl)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+# Charger les données
+sica <- read_excel("Projet_abeilles/BD/Activity_Sica_2023.xlsx")
+
+# Transformer les données en format long
+sica_long <- sica %>%
+  pivot_longer(cols = -date, names_to = "type", values_to = "valeur") %>%
+  mutate(
+    ruche = sub("CPT_|-entrées|-sorties", "", type),  # Extraire le numéro de ruche
+    mouvement = ifelse(grepl("entrées", type), "Entrées", "Sorties")  # Identifier entrées/sorties
+  )
+
+# Filtrer pour la date du 13 octobre 2023
+sica_13octobre <- sica_long %>%
+  filter(as.Date(date) == as.Date("2023-10-13"))
+
+# Supprimer les 3 plus grandes valeurs
+sica_13octobre_filtre <- sica_13octobre %>%
+  arrange(desc(valeur)) %>%  # Trier les valeurs décroissantes
+  slice(-c(1:6))  # Supprimer les 3 premières lignes
+
+# Création du graphique
+graphique_global_zoom <- ggplot(sica_13octobre_filtre, aes(x = date, y = valeur, color = ruche)) +
+  geom_point(aes(shape = mouvement), size = 1) +
+  scale_shape_manual(values = c("Entrées" = 7, "Sorties" = 16)) +  # Légende simplifiée
+  scale_color_brewer(palette = "Paired", guide = "none") +  # Utilisation d'une palette avec plus de couleurs
+  labs(title = "Activité des ruches le 13 octobre 2023 (sans valeurs extrêmes)",
+       x = "Date",
+       y = "Nombre d'entrées/sorties",
+       shape = "Mouvement") +
+  theme_minimal()
+
+# Afficher le graphique
+print(graphique_global_zoom)
+
+
+```
+
+```{r, warning=FALSE}
+library(readxl)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+# Charger les données
+sica <- read_excel("Projet_abeilles/BD/Activity_Sica_2023.xlsx")
+
+# Transformer les données en format long
+sica_long <- sica %>%
+  pivot_longer(cols = -date, names_to = "type", values_to = "valeur") %>%
+  mutate(
+    ruche = sub("CPT_|-entrées|-sorties", "", type),  # Extraire le numéro de ruche
+    Mouvement = ifelse(grepl("entrées", type), "Entrées", "Sorties")  # Identifier entrées/sorties
+  )
+
+# Filtrer pour la date du 3 mai 2023
+sica_13octobre <- sica_long %>%
+  filter(as.Date(date) == as.Date("2023-10-13"))
+
+# Création du graphique
+graphique_global <- ggplot(sica_13octobre, aes(x = date, y = valeur, color=Mouvement)) +
+  geom_point(size = 1) +
+  scale_color_manual(values = c("Entrées" = "purple", "Sorties" = "lightblue")) +  # Bleu pour entrées, rouge pour sorties
+  scale_x_datetime(date_labels = "%H:%M") +  # <-- ici : seulement les heures sur l’axe X
+  labs(title = "Activité des ruches le 13 octobre  2023",
+       x = "Date",
+       y = "Nombre d'entrées/sorties",
+       couleur = "Mouvement") +
+  theme_minimal()
+
+# Afficher le graphique
+print(graphique_global)
+
+
+# Filtrer pour la date du 3 mai 2023
+sica_10avril <- sica_long %>%
+  filter(as.Date(date) == as.Date("2023-04-10"))
+
+# Création du graphique
+graphique_global2 <- ggplot(sica_10avril, aes(x = date, y = valeur, color=Mouvement)) +
+  geom_point(size = 1) +
+  scale_color_manual(values = c("Entrées" = "purple", "Sorties" = "lightblue")) +  # Bleu pour entrées, rouge pour sorties
+  scale_x_datetime(date_labels = "%H:%M") +  # <-- ici : seulement les heures sur l’axe X
+  labs(title = "Activité des ruches le 10 avril 2023",
+       x = "Date",
+       y = "Nombre d'entrées/sorties",
+       color = "Mouvement") +
+  theme_minimal()
+
+# Afficher le graphique
+print(graphique_global2)
+
+
+
+```
+
+```{r, warning=FALSE}
+library(readxl)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+# Charger les données
+sica <- read_excel("Projet_abeilles/BD/Activity_Sica_2023.xlsx")
+
+# Transformer les données en format long
+sica_long <- sica %>%
+  pivot_longer(cols = -date, names_to = "type", values_to = "valeur") %>%
+  mutate(
+    ruche = sub("CPT_|-entrées|-sorties", "", type),  # Extraire le numéro de ruche
+    Mouvement = ifelse(grepl("entrées", type), "Entrées", "Sorties")  # Identifier entrées/sorties
+  )
+
+# Filtrer pour la date du 13 octobre 2023
+sica_13octobre <- sica_long %>%
+  filter(as.Date(date) == as.Date("2023-10-13"))
+
+# Supprimer les 3 plus grandes valeurs
+sica_13octobre_filtre <- sica_13octobre %>%
+  arrange(desc(valeur)) %>%  # Trier les valeurs décroissantes
+  slice(-c(1:6))  # Supprimer les 3 premières lignes
+
+# Création du graphique
+graphique_global_zoom <- ggplot(sica_13octobre_filtre, aes(x = date, y = valeur, color=Mouvement)) +
+  geom_point(size = 1) +
+  scale_color_manual(values = c("Entrées" = "purple", "Sorties" = "lightblue")) +  # Bleu pour entrées, rouge pour sorties
+  scale_x_datetime(date_labels = "%H:%M") +  # <-- ici : seulement les heures sur l’axe X
+  labs(title = "Activité des ruches le 13 octobre  2023",
+       x = "Date",
+       y = "Nombre d'entrées/sorties",
+       couleur = "Mouvement") +
+  theme_minimal()
+
+# Afficher le graphique
+print(graphique_global_zoom)
+
+
+
+```
+
+```{r}
+
+
+```
