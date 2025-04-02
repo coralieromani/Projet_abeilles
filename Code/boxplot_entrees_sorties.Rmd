@@ -1,0 +1,50 @@
+---
+title: "test"
+output: html_document
+date: "2025-04-02"
+---
+
+# boxplot
+
+```{r, warning=FALSE}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(readxl)
+
+# Charger les données
+activity_sica <-read_excel("BD/Activity_Sica_2023.xlsx")
+
+# Transformer les données en format long
+activity_long <- activity_sica %>%
+  pivot_longer(cols = -date, names_to = "type", values_to = "valeur") %>%
+  mutate(
+    ruche = sub("CPT_|-entrées|-sorties", "", type),  # Extraire le numéro de ruche
+    mouvement = ifelse(grepl("entrées", type), "Entrées", "Sorties")  # Identifier le type de mouvement
+  )
+
+# Séparer les entrées et les sorties
+activity_entrees <- activity_long %>% filter(mouvement == "Entrées")
+activity_sorties <- activity_long %>% filter(mouvement == "Sorties")
+
+ggplot(activity_entrees, aes(x = ruche, y = valeur, fill = ruche)) +
+  geom_boxplot() +
+  labs(title = "Distribution des entrées par ruche",
+       x = "Ruche",
+       y = "Nombre d'entrées") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggplot(activity_sorties, aes(x = ruche, y = valeur, fill = ruche)) +
+  geom_boxplot() +
+  labs(title = "Distribution des sorties par ruche",
+       x = "Ruche",
+       y = "Nombre de sorties") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+```
+
+
+
