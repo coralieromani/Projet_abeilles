@@ -13,7 +13,7 @@ library(tidyr)
 library(readxl)
 
 # Charger les données
-activity_sica <-read_excel("BD/Activity_Sica_2023.xlsx")
+activity_sica <-read_excel("../BD/Activity_Sica_2023.xlsx")
 
 # Transformer les données en format long
 activity_long <- activity_sica %>%

@@ -270,5 +270,176 @@ graphique_global2 <- ggplot(sica_moyenne2, aes(x = date, y = moyenne_valeur, col
 # Afficher le graphique
 print(graphique_global2)
 
+```
+
+# régression linéaire segmentée sur les entrées sorties pour le 13/10
+
+```{r, warning=FALSE}
+library(readxl)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(segmented)
+
+# Charger les données
+sica <- read_excel("../BD/Activity_Sica_2023.xlsx")
+
+# Transformer les données en format long
+sica_long <- sica %>%
+  pivot_longer(cols = -date, names_to = "type", values_to = "valeur") %>%
+  mutate(
+    ruche = sub("CPT_|-entrées|-sorties", "", type),  # Extraire le numéro de ruche
+    Mouvement = ifelse(grepl("entrées", type), "Entrées", "Sorties")  # Identifier entrées/sorties
+  )
+
+# Filtrer pour la date du 13 octobre 2023
+sica_13octobre <- sica_long %>%
+  filter(as.Date(date) == as.Date("2023-10-13"))
+
+# Calculer la moyenne des entrées et sorties à chaque instant
+sica_moyenne <- sica_13octobre %>%
+  group_by(date, Mouvement) %>%
+  summarise(moyenne_valeur = mean(valeur, na.rm = TRUE), .groups = "drop")
+
+# Transformer la date en format numérique (secondes depuis le début)
+sica_moyenne <- sica_moyenne %>%
+  mutate(date_num = as.numeric(date))
+
+# Séparer les entrées et sorties
+sica_entrees <- filter(sica_moyenne, Mouvement == "Entrées")
+sica_sorties <- filter(sica_moyenne, Mouvement == "Sorties")
+
+# Ajuster les modèles linéaires
+modele_entrees <- lm(moyenne_valeur ~ date_num, data = sica_entrees)
+modele_sorties <- lm(moyenne_valeur ~ date_num, data = sica_sorties)
+
+# Ajuster les modèles segmentés
+modele_segmente_entrees <- segmented(modele_entrees, seg.Z = ~ date_num, npsi = 4, silent = TRUE)
+modele_segmente_sorties <- segmented(modele_sorties, seg.Z = ~ date_num, npsi = 4, silent = TRUE)
+
+# Extraire les breakpoints
+breakpoints_entrees <- modele_segmente_entrees$psi[, "Est."]
+breakpoints_sorties <- modele_segmente_sorties$psi[, "Est."]
+
+# Convertir les breakpoints en dates réelles
+breakpoints_dates_entrees <- as.POSIXct(breakpoints_entrees, origin = "1970-01-01")
+breakpoints_dates_sorties <- as.POSIXct(breakpoints_sorties, origin = "1970-01-01")
+
+# Ajouter les prédictions des modèles segmentés
+sica_entrees$prediction <- predict(modele_segmente_entrees, newdata = data.frame(date_num = sica_entrees$date_num))
+sica_sorties$prediction <- predict(modele_segmente_sorties, newdata = data.frame(date_num = sica_sorties$date_num))
+
+# Création du graphique
+graphique_global <- ggplot() +
+  
+  # Tracer la courbe segmentée pour les entrées
+  geom_line(data = sica_entrees, aes(x = date, y = prediction, color = "Entrées"), size = 1) +
+  geom_point(data = data.frame(date = breakpoints_dates_entrees,
+                               poids = predict(modele_segmente_entrees, newdata = data.frame(date_num = breakpoints_entrees))),
+             aes(x = date, y = poids, color = "Entrées"), size = 3) +
+  
+  # Tracer la courbe segmentée pour les sorties
+  geom_line(data = sica_sorties, aes(x = date, y = prediction, color = "Sorties"), size = 1) +
+  geom_point(data = data.frame(date = breakpoints_dates_sorties,
+                               poids = predict(modele_segmente_sorties, newdata = data.frame(date_num = breakpoints_sorties))),
+             aes(x = date, y = poids, color = "Sorties"), size = 3) +
+  
+  # Définition des couleurs et affichage de la légende
+  scale_color_manual(values = c("Entrées" = "purple", "Sorties" = "pink"), name = "Mouvement") +
+  scale_x_datetime(date_labels = "%H:%M") +  
+  labs(title = "Évolution des entrées et sorties moyennes - 13 octobre 2023",
+       x = "Heure",
+       y = "Nombre moyen d'entrées/sorties") +
+  theme_minimal()
+
+# Afficher le graphique
+print(graphique_global)
+
+
+```
+
+# régression linéaire segmentée sur les entrées sorties pour le 10/04
+
+```{r, warning=FALSE}
+library(readxl)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(segmented)
+
+# Charger les données
+sica <- read_excel("../BD/Activity_Sica_2023.xlsx")
+
+# Transformer les données en format long
+sica_long <- sica %>%
+  pivot_longer(cols = -date, names_to = "type", values_to = "valeur") %>%
+  mutate(
+    ruche = sub("CPT_|-entrées|-sorties", "", type),  # Extraire le numéro de ruche
+    Mouvement = ifelse(grepl("entrées", type), "Entrées", "Sorties")  # Identifier entrées/sorties
+  )
+
+# Filtrer pour la date du 13 octobre 2023
+sica_10avril <- sica_long %>%
+  filter(as.Date(date) == as.Date("2023-04-10"))
+
+# Calculer la moyenne des entrées et sorties à chaque instant
+sica_moyenne <- sica_10avril %>%
+  group_by(date, Mouvement) %>%
+  summarise(moyenne_valeur = mean(valeur, na.rm = TRUE), .groups = "drop")
+
+# Transformer la date en format numérique (secondes depuis le début)
+sica_moyenne <- sica_moyenne %>%
+  mutate(date_num = as.numeric(date))
+
+# Séparer les entrées et sorties
+sica_entrees <- filter(sica_moyenne, Mouvement == "Entrées")
+sica_sorties <- filter(sica_moyenne, Mouvement == "Sorties")
+
+# Ajuster les modèles linéaires
+modele_entrees <- lm(moyenne_valeur ~ date_num, data = sica_entrees)
+modele_sorties <- lm(moyenne_valeur ~ date_num, data = sica_sorties)
+
+# Ajuster les modèles segmentés
+modele_segmente_entrees <- segmented(modele_entrees, seg.Z = ~ date_num, npsi = 4, silent = TRUE)
+modele_segmente_sorties <- segmented(modele_sorties, seg.Z = ~ date_num, npsi = 4, silent = TRUE)
+
+# Extraire les breakpoints
+breakpoints_entrees <- modele_segmente_entrees$psi[, "Est."]
+breakpoints_sorties <- modele_segmente_sorties$psi[, "Est."]
+
+# Convertir les breakpoints en dates réelles
+breakpoints_dates_entrees <- as.POSIXct(breakpoints_entrees, origin = "1970-01-01")
+breakpoints_dates_sorties <- as.POSIXct(breakpoints_sorties, origin = "1970-01-01")
+
+# Ajouter les prédictions des modèles segmentés
+sica_entrees$prediction <- predict(modele_segmente_entrees, newdata = data.frame(date_num = sica_entrees$date_num))
+sica_sorties$prediction <- predict(modele_segmente_sorties, newdata = data.frame(date_num = sica_sorties$date_num))
+
+# Création du graphique
+graphique_global <- ggplot() +
+  
+  # Tracer la courbe segmentée pour les entrées
+  geom_line(data = sica_entrees, aes(x = date, y = prediction, color = "Entrées"), size = 1) +
+  geom_point(data = data.frame(date = breakpoints_dates_entrees,
+                               poids = predict(modele_segmente_entrees, newdata = data.frame(date_num = breakpoints_entrees))),
+             aes(x = date, y = poids, color = "Entrées"), size = 3) +
+  
+  # Tracer la courbe segmentée pour les sorties
+  geom_line(data = sica_sorties, aes(x = date, y = prediction, color = "Sorties"), size = 1) +
+  geom_point(data = data.frame(date = breakpoints_dates_sorties,
+                               poids = predict(modele_segmente_sorties, newdata = data.frame(date_num = breakpoints_sorties))),
+             aes(x = date, y = poids, color = "Sorties"), size = 3) +
+  
+  # Définition des couleurs et affichage de la légende
+  scale_color_manual(values = c("Entrées" = "purple", "Sorties" = "pink"), name = "Mouvement") +
+  scale_x_datetime(date_labels = "%H:%M") +  
+  labs(title = "Évolution des entrées et sorties moyennes - 10 avril 2023",
+       x = "Heure",
+       y = "Nombre moyen d'entrées/sorties") +
+  theme_minimal()
+
+# Afficher le graphique
+print(graphique_global)
+
 
 ```
