@@ -1,0 +1,454 @@
+---
+title: "entrees_sorties_poids"
+output: html_document
+date: "2025-04-02"
+---
+
+# RLS sur moyenne poids des ruches sur un jour
+
+```{r, echo=FALSE, warning=FALSE}
+library(readxl)
+library(ggplot2)
+library(segmented)
+library(gridExtra)
+
+# Charger les données
+poids <- read_excel("../BD/Weight_2023_Sica_Confoux.xlsx")
+
+colnames(poids) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435",
+                            "Confoux - 430", "Confoux - 404", "Confoux - 405",
+                            "Sica - 415", "Sica - 428", "Sica - 444",
+                            "Sica - 412", "Sica - Y", "Sica - 89")
+
+poids_sica <- poids[, c(1, (ncol(poids) - 5):ncol(poids))]
+
+# Extraire les données pour la rûche
+poids_restreint2 <- subset(poids_sica, date <= "2023-04-10 23:00:00" & date >= "2023-04-10 00:00:00")
+
+poids_moyen <- data.frame(date = poids_restreint2$date, poids = rowMeans(poids_restreint2[,-1])) 
+
+colnames(poids_restreint2)[2] <- "poids"
+
+poids_moyen$date_num <- as.numeric(poids_restreint2$date)
+modele <- lm(poids ~ date_num, data = poids_moyen)
+
+modele_segmente <- segmented(modele, seg.Z = ~date_num, npsi = 4, silent = TRUE)
+
+# Extraire les breakpoints (estimation)
+breakpoints <- modele_segmente$psi[, "Est."]
+
+# Convertir les breakpoints numériques en dates
+breakpoints_dates <- as.POSIXct(breakpoints)
+
+# Tracer le graphique avec la régression linéaire segmentée
+ggplot(poids_moyen, aes(x = date, y = poids)) +
+  geom_line(aes(y = predict(modele_segmente, newdata = poids_moyen)), color = "blue") +
+  labs(x = "Heure", y = "Poids moyen") +
+  scale_x_datetime(labels = scales::date_format("%H:%M")) +
+  theme_minimal()
+
+```
+
+#essai: mettre poids et entrées sorties sur un meme graphe
+
+```{r, echo='FALSE', warning=FALSE}
+library(readxl)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(segmented)
+
+# Charger les données Activity_Sica
+sica <- read_excel("../BD/Activity_Sica_2023.xlsx")
+
+# Transformer les données en format long
+sica_long <- sica %>%
+  pivot_longer(cols = -date, names_to = "type", values_to = "valeur") %>%
+  mutate(
+    ruche = sub("CPT_|-entrées|-sorties", "", type),  # Extraire le numéro de ruche
+    Mouvement = ifelse(grepl("entrées", type), "Entrées", "Sorties")  # Identifier entrées/sorties
+  )
+
+# Filtrer pour la date du 10 avril 2023
+sica_10avril <- sica_long %>%
+  filter(as.Date(date) == as.Date("2023-04-10"))
+
+# Calculer la moyenne des entrées et sorties à chaque instant
+sica_moyenne <- sica_10avril %>%
+  group_by(date, Mouvement) %>%
+  summarise(moyenne_valeur = mean(valeur, na.rm = TRUE), .groups = "drop")
+
+# Transformer la date en format numérique (secondes depuis le début)
+sica_moyenne <- sica_moyenne %>%
+  mutate(date_num = as.numeric(date))
+
+# Séparer les entrées et sorties
+sica_entrees <- filter(sica_moyenne, Mouvement == "Entrées")
+sica_sorties <- filter(sica_moyenne, Mouvement == "Sorties")
+
+# Ajuster les modèles linéaires segmentés
+modele_entrees <- lm(moyenne_valeur ~ date_num, data = sica_entrees)
+modele_sorties <- lm(moyenne_valeur ~ date_num, data = sica_sorties)
+
+modele_segmente_entrees <- segmented(modele_entrees, seg.Z = ~ date_num, npsi = 4, silent = TRUE)
+modele_segmente_sorties <- segmented(modele_sorties, seg.Z = ~ date_num, npsi = 4, silent = TRUE)
+
+# Extraire les breakpoints
+breakpoints_entrees <- modele_segmente_entrees$psi[, "Est."]
+breakpoints_sorties <- modele_segmente_sorties$psi[, "Est."]
+
+# Convertir les breakpoints en dates réelles
+breakpoints_dates_entrees <- as.POSIXct(breakpoints_entrees, origin = "1970-01-01")
+breakpoints_dates_sorties <- as.POSIXct(breakpoints_sorties, origin = "1970-01-01")
+
+# Ajouter les prédictions des modèles segmentés
+sica_entrees$prediction <- predict(modele_segmente_entrees, newdata = data.frame(date_num = sica_entrees$date_num))
+sica_sorties$prediction <- predict(modele_segmente_sorties, newdata = data.frame(date_num = sica_sorties$date_num))
+
+# Charger les données de poids des ruches
+poids <- read_excel("../BD/Weight_2023_Sica_Confoux.xlsx")
+colnames(poids) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435",
+                     "Confoux - 430", "Confoux - 404", "Confoux - 405",
+                     "Sica - 415", "Sica - 428", "Sica - 444",
+                     "Sica - 412", "Sica - Y", "Sica - 89")
+
+# Sélectionner les colonnes nécessaires
+poids_sica <- poids[, c(1, (ncol(poids) - 5):ncol(poids))]
+
+# Filtrer les données pour la date du 10 avril 2023
+poids_restreint2 <- subset(poids_sica, date <= "2023-04-10 23:00:00" & date >= "2023-04-10 00:00:00")
+
+# Calculer le poids moyen
+poids_moyen <- data.frame(date = poids_restreint2$date, poids = rowMeans(poids_restreint2[,-1])) 
+poids_moyen$date_num <- as.numeric(poids_restreint2$date)
+
+# Ajuster le modèle linéaire segmenté pour le poids moyen
+modele <- lm(poids ~ date_num, data = poids_moyen)
+modele_segmente <- segmented(modele, seg.Z = ~date_num, npsi = 4, silent = TRUE)
+
+# Ajouter les prédictions du modèle segmenté du poids moyen
+poids_moyen$prediction <- predict(modele_segmente, newdata = data.frame(date_num = poids_moyen$date_num))
+
+# Tracer le graphique avec 2 axes y
+library(ggplot2)
+library(grid)
+
+# Graphique des entrées et sorties
+graphique_global <- ggplot() +
+  
+  # Tracer la courbe segmentée pour les entrées
+  geom_line(data = sica_entrees, aes(x = date, y = prediction, color = "Entrées"), size = 1) +
+  
+  # Tracer la courbe segmentée pour les sorties
+  geom_line(data = sica_sorties, aes(x = date, y = prediction, color = "Sorties"), size = 1) +
+  
+  # Tracer la courbe du poids moyen sur l'axe principal
+  geom_line(data = poids_moyen, aes(x = date, y = prediction * 2, color = "Poids moyen"), size = 1) +
+  
+  # Définir les couleurs pour les courbes
+  scale_color_manual(values = c("Entrées" = "purple", "Sorties" = "pink", "Poids moyen" = "blue"), name = "Mouvement") +
+  
+  # Définir l'échelle de l'axe x
+  scale_x_datetime(date_labels = "%H:%M") +
+  
+  # Définir l'échelle du premier axe y
+  scale_y_continuous(name = "Entrées / Sorties",
+                     limits = c(0, max(c(sica_entrees$prediction, sica_sorties$prediction), na.rm = TRUE)),
+                     sec.axis = sec_axis(~ ., name = "Poids moyen", breaks = seq(46, 48, by = 0.5))) +
+  
+  # Ajouter les titres et labels
+  labs(title = "Évolution des entrées, sorties et poids moyen - 10 avril 2023",
+       x = "Heure") +
+  
+  # Thème esthétique
+  theme_minimal() +
+  
+  # Ajouter une échelle manuelle pour le deuxième axe (poids)
+  scale_y_continuous(name = "Entrées / Sorties", 
+                     sec.axis = sec_axis(~ . / 2, name = "Poids moyen", breaks = seq(46, 48, by = 0.5)))
+
+# Afficher le graphique
+print(graphique_global)
+
+
+
+```
+
+#entrées sorties en fonction des heures avec fond couleur en fonction du poids
+
+```{r}
+library(readxl)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(segmented)
+library(gridExtra)
+
+# Charger les données Activity_Sica
+sica <- read_excel("../BD/Activity_Sica_2023.xlsx")
+
+# Transformer les données en format long
+sica_long <- sica %>%
+  pivot_longer(cols = -date, names_to = "type", values_to = "valeur") %>%
+  mutate(
+    ruche = sub("CPT_|-entrées|-sorties", "", type),
+    Mouvement = ifelse(grepl("entrées", type), "Entrées", "Sorties")
+  )
+
+# Filtrer pour la date du 10 avril 2023
+sica_10avril <- sica_long %>%
+  filter(as.Date(date) == as.Date("2023-04-10"))
+
+# Calculer la moyenne des entrées et sorties à chaque instant
+sica_moyenne <- sica_10avril %>%
+  group_by(date, Mouvement) %>%
+  summarise(moyenne_valeur = mean(valeur, na.rm = TRUE), .groups = "drop")
+
+# Transformer la date en format numérique
+sica_moyenne <- sica_moyenne %>%
+  mutate(date_num = as.numeric(date))
+
+# Séparer les entrées et sorties
+sica_entrees <- filter(sica_moyenne, Mouvement == "Entrées")
+sica_sorties <- filter(sica_moyenne, Mouvement == "Sorties")
+
+# Ajuster les modèles linéaires segmentés
+modele_entrees <- lm(moyenne_valeur ~ date_num, data = sica_entrees)
+modele_sorties <- lm(moyenne_valeur ~ date_num, data = sica_sorties)
+
+modele_segmente_entrees <- segmented(modele_entrees, seg.Z = ~ date_num, npsi = 4, silent = TRUE)
+modele_segmente_sorties <- segmented(modele_sorties, seg.Z = ~ date_num, npsi = 4, silent = TRUE)
+
+# Ajouter les prédictions des modèles segmentés
+sica_entrees$prediction <- predict(modele_segmente_entrees, newdata = data.frame(date_num = sica_entrees$date_num))
+sica_sorties$prediction <- predict(modele_segmente_sorties, newdata = data.frame(date_num = sica_sorties$date_num))
+
+# Charger les données de poids des ruches
+poids <- read_excel("../BD/Weight_2023_Sica_Confoux.xlsx")
+colnames(poids) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435", "Confoux - 430", "Confoux - 404", "Confoux - 405", "Sica - 415", "Sica - 428", "Sica - 444", "Sica - 412", "Sica - Y", "Sica - 89")
+
+# Sélectionner et filtrer les données du poids
+poids_sica <- poids[, c(1, (ncol(poids) - 5):ncol(poids))]
+poids_restreint <- subset(poids_sica, date <= "2023-04-10 23:00:00" & date >= "2023-04-10 00:00:00")
+
+# Calcul du poids moyen
+poids_moyen <- data.frame(date = poids_restreint$date, poids = rowMeans(poids_restreint[,-1], na.rm = TRUE)) 
+
+# Graphique avec couleur de fond selon le poids
+graphique_global <- ggplot() +
+  # Fond coloré selon le poids moyen
+  geom_tile(data = poids_moyen, aes(x = date, y = 0, fill = poids), height = Inf, alpha = 0.3) +
+  
+  # Tracer la courbe segmentée pour les entrées
+  geom_line(data = sica_entrees, aes(x = date, y = prediction, color = "Entrées"), size = 1) +
+  
+  # Tracer la courbe segmentée pour les sorties
+  geom_line(data = sica_sorties, aes(x = date, y = prediction, color = "Sorties"), size = 1) +
+  
+  # Définir les couleurs pour les courbes
+  scale_color_manual(values = c("Entrées" = "purple", "Sorties" = "pink"), name = "Mouvement") +
+  
+  # Définir la palette de couleurs pour le poids
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Poids (kg)") +
+  
+  # Définir l'échelle de l'axe x
+  scale_x_datetime(date_labels = "%H:%M", name = "Heure") +
+  
+  # Définir l'échelle de l'axe y
+  scale_y_continuous(name = "Entrées / Sorties") +
+  
+  # Ajouter un thème esthétique
+  theme_minimal()
+
+# Afficher le graphique
+print(graphique_global)
+
+
+```
+# entrées-sorties en fonction des heures avec fond couleur en fonction du poids pour 1 jour
+
+```{r}
+library(readxl)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(segmented)
+library(gridExtra)
+
+# Charger les données Activity_Sica
+sica <- read_excel("../BD/Activity_Sica_2023.xlsx")
+
+# Transformer les données en format long
+sica_long <- sica %>%
+  pivot_longer(cols = -date, names_to = "type", values_to = "valeur") %>%
+  mutate(
+    ruche = sub("CPT_|-entrées|-sorties", "", type),
+    Mouvement = ifelse(grepl("entrées", type), "Entrées", "Sorties")
+  )
+
+# Filtrer pour la date du 10 avril 2023
+sica_10avril <- sica_long %>% filter(as.Date(date) %in% as.Date(c("2023-04-10")))
+
+# Calculer la moyenne des entrées et sorties à chaque instant
+sica_moyenne <- sica_10avril %>%
+  group_by(date, Mouvement) %>%
+  summarise(moyenne_valeur = mean(valeur, na.rm = TRUE), .groups = "drop") %>%
+  pivot_wider(names_from = Mouvement, values_from = moyenne_valeur, values_fill = list(moyenne_valeur = 0)) %>%
+  mutate(
+    diff_entrees_sorties = Entrées - Sorties,
+    date_num = as.numeric(date)
+  )
+
+# Ajuster un modèle linéaire segmenté pour la différence
+diff_modele <- lm(diff_entrees_sorties ~ date_num, data = sica_moyenne)
+diff_modele_segmente <- segmented(diff_modele, seg.Z = ~ date_num, npsi = 4, silent = TRUE)
+
+sica_moyenne$prediction <- predict(diff_modele_segmente, newdata = data.frame(date_num = sica_moyenne$date_num))
+
+# Charger les données de poids des ruches
+poids <- read_excel("../BD/Weight_2023_Sica_Confoux.xlsx")
+colnames(poids) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435", "Confoux - 430", "Confoux - 404", "Confoux - 405", "Sica - 415", "Sica - 428", "Sica - 444", "Sica - 412", "Sica - Y", "Sica - 89")
+
+# Sélectionner et filtrer les données du poids
+poids_sica <- poids[, c(1, (ncol(poids) - 5):ncol(poids))]
+poids_restreint <- subset(poids_sica, date <= "2023-04-11 02:00:00" & date >= "2023-04-10 00:00:00")
+
+# Calcul du poids moyen
+poids_moyen <- data.frame(date = poids_restreint$date, poids = rowMeans(poids_restreint[,-1], na.rm = TRUE)) 
+
+# Graphique avec couleur de fond selon le poids
+graphique_global <- ggplot() +
+  # Fond coloré selon le poids moyen
+  geom_tile(data = poids_moyen, aes(x = date, y = 0, fill = poids), height = Inf, alpha = 0.3) +
+  
+  # Tracer la courbe de la différence entrées - sorties
+  geom_line(data = sica_moyenne, aes(x = date, y = prediction, color = "Différence Entrées - Sorties"), size = 1) +
+  
+  # Définir les couleurs pour la courbe
+  scale_color_manual(values = c("Différence Entrées - Sorties" = "purple"), name = "Mouvement") +
+  
+  # Définir la palette de couleurs pour le poids
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Poids (kg)") +
+  
+  # Définir l'échelle de l'axe x
+  scale_x_datetime(date_labels = "%H:%M", name = "Heure") +
+  
+  # Définir l'échelle de l'axe y
+  scale_y_continuous(name = "Différence Entrées - Sorties") +
+  
+  # Ajouter un thème esthétique
+  theme_minimal()
+
+# Afficher le graphique
+print(graphique_global)
+
+
+```
+
+# entrées-sorties en fonction des heures avec fond couleur en fonction du poids pour 1 semaine
+
+
+```{r}
+library(readxl)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(segmented)
+library(gridExtra)
+
+# Charger les données Activity_Sica
+sica <- read_excel("../BD/Activity_Sica_2023.xlsx")
+
+# Transformer les données en format long
+sica_long <- sica %>%
+  pivot_longer(cols = -date, names_to = "type", values_to = "valeur") %>%
+  mutate(
+    ruche = sub("CPT_|-entrées|-sorties", "", type),
+    Mouvement = ifelse(grepl("entrées", type), "Entrées", "Sorties")
+  )
+
+# Filtrer pour une semaine entière
+dates_semaine <- seq(as.Date("2023-04-10"), by = "day", length.out = 7)
+sica_semaine <- sica_long %>% filter(as.Date(date) %in% dates_semaine)
+
+# Calculer la moyenne des entrées et sorties à chaque instant
+sica_moyenne <- sica_semaine %>%
+  group_by(date, Mouvement) %>%
+  summarise(moyenne_valeur = mean(valeur, na.rm = TRUE), .groups = "drop") %>%
+  pivot_wider(names_from = Mouvement, values_from = moyenne_valeur, values_fill = list(moyenne_valeur = 0)) %>%
+  mutate(
+    diff_entrees_sorties = Entrées - Sorties,
+    date_num = as.numeric(date)
+  )
+
+# Appliquer un modèle linéaire segmenté pour chaque jour
+sica_moyenne <- sica_moyenne %>% group_by(as.Date(date)) %>%
+  mutate(
+    diff_modele = list(lm(diff_entrees_sorties ~ date_num, data = cur_data())),
+    diff_modele_segmente = list(segmented(diff_modele[[1]], seg.Z = ~ date_num, npsi = 4, silent = TRUE)),
+    prediction = predict(diff_modele_segmente[[1]], newdata = data.frame(date_num = date_num))
+  ) %>% ungroup()
+
+# Charger les données de poids des ruches
+poids <- read_excel("../BD/Weight_2023_Sica_Confoux.xlsx")
+colnames(poids) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435", "Confoux - 430", "Confoux - 404", "Confoux - 405", "Sica - 415", "Sica - 428", "Sica - 444", "Sica - 412", "Sica - Y", "Sica - 89")
+
+# Sélectionner et filtrer les données du poids
+poids_sica <- poids[, c(1, (ncol(poids) - 5):ncol(poids))]
+poids_restreint <- subset(poids_sica, date <= "2023-04-17 02:00:00" & date >= "2023-04-10 00:00:00")
+
+# Calcul du poids moyen
+poids_moyen <- data.frame(date = poids_restreint$date, poids = rowMeans(poids_restreint[,-1], na.rm = TRUE)) 
+
+# Graphique avec couleur de fond selon le poids
+graphique_global <- ggplot() +
+  # Fond coloré selon le poids moyen
+  geom_tile(data = poids_moyen, aes(x = date, y = 0, fill = poids), height = Inf, alpha = 0.5) +
+  
+  # Tracer la courbe de la différence entrées - sorties
+  geom_line(data = sica_moyenne, aes(x = date, y = prediction, color = "Différence Entrées - Sorties"), size = 0.5) +
+  
+  # Définir les couleurs pour la courbe
+  scale_color_manual(values = c("Différence Entrées - Sorties" = "purple"), name = "Mouvement") +
+  
+  # Définir la palette de couleurs pour le poids
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Poids (kg)") +
+  
+  # Définir l'échelle de l'axe x
+  scale_x_datetime(date_labels = "%d %b - %H:%M", name = "Date et Heure") +
+  
+  # Définir l'échelle de l'axe y
+  scale_y_continuous(name = "Différence Entrées - Sorties") +
+  
+  # Ajouter un thème esthétique
+  theme_minimal()
+
+# Afficher le graphique
+print(graphique_global)
+
+
+
+```
+
+
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
