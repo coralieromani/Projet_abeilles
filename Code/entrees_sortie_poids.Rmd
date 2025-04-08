@@ -431,14 +431,141 @@ print(graphique_global)
 ```
 
 
+#TEST MARINE
 
-```{r}
+Ajustement de l'axe des poids moyen à partir du code du Chunk 2
+```{r, include = FALSE}
+library(ggplot2)
+library(grid)
+
+# Tracer le graphique avec deux axes y indépendants
+graphique_global <- ggplot() +
+  
+  # Dessiner les entrées et sorties sur le premier axe y
+  geom_line(data = sica_entrees, aes(x = date, y = prediction, color = "Entrées"), size = 1) +
+  geom_line(data = sica_sorties, aes(x = date, y = prediction, color = "Sorties"), size = 1) +
+  
+  # Créer un deuxième axe y pour le poids moyen
+  scale_y_continuous(name = "Entrées / Sorties", 
+                     limits = c(-50, 800)) + #modifier en mettant le min et le max ?
+  
+  # Ajouter la courbe du poids moyen sur un axe secondaire
+  geom_line(data = poids_moyen, aes(x = date, y = (prediction - 46) * 800/2 + 0, 
+                            color = "Poids moyen"), size = 1) +
+  
+  # Créer l'axe secondaire avec transformation inverse et graduations spécifiques
+  scale_y_continuous(name = "Entrées / Sorties", 
+                     sec.axis = sec_axis(~ (. - 0)/(800/2) + 46, 
+                                        name = "Poids moyen",
+                                        breaks = seq(46, 48, by = 0.5))) +
+  
+  # Définir les couleurs
+  scale_color_manual(values = c("Entrées" = "purple", "Sorties" = "pink", "Poids moyen" = "blue"), 
+                     name = "Mouvement") +
+  # Définir l'échelle de l'axe x
+  scale_x_datetime(date_labels = "%H:%M") +
+  
+  # Ajouter les titres et labels
+  labs(title = "Évolution des entrées, sorties et poids moyen - 10 avril 2023",
+       x = "Heure") +
+  
+  # Thème esthétique avec grille plus visible
+  theme_minimal() 
+# Afficher le graphique
+print(graphique_global)
+```
+
+Graphique de comparaison de l'évolution du poids et de la différence entre les entrées sorties sur une journée (effectué à partir du code du Chunk 4).
+```{r, include = FALSE}
+library(readxl)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(segmented)
+library(gridExtra)
+
+# Charger les données Activity_Sica
+sica <- read_excel("../BD/Activity_Sica_2023.xlsx")
+
+# Transformer les données en format long
+sica_long <- sica %>%
+  pivot_longer(cols = -date, names_to = "type", values_to = "valeur") %>%
+  mutate(
+    ruche = sub("CPT_|-entrées|-sorties", "", type),
+    Mouvement = ifelse(grepl("entrées", type), "Entrées", "Sorties")
+  )
+
+# Filtrer pour la date du 10 avril 2023
+sica_10avril <- sica_long %>% filter(as.Date(date) %in% as.Date(c("2023-04-10")))
+
+# Calculer la moyenne des entrées et sorties à chaque instant
+sica_moyenne <- sica_10avril %>%
+  group_by(date, Mouvement) %>%
+  summarise(moyenne_valeur = mean(valeur, na.rm = TRUE), .groups = "drop") %>%
+  pivot_wider(names_from = Mouvement, values_from = moyenne_valeur, values_fill = list(moyenne_valeur = 0)) %>%
+  mutate(
+    diff_entrees_sorties = Entrées - Sorties,
+    date_num = as.numeric(date)
+  )
+
+# Ajuster un modèle linéaire segmenté pour la différence
+diff_modele <- lm(diff_entrees_sorties ~ date_num, data = sica_moyenne)
+diff_modele_segmente <- segmented(diff_modele, seg.Z = ~ date_num, npsi = 4, silent = TRUE)
+
+sica_moyenne$prediction <- predict(diff_modele_segmente, newdata = data.frame(date_num = sica_moyenne$date_num))
+
+# Charger les données de poids des ruches
+poids <- read_excel("../BD/Weight_2023_Sica_Confoux.xlsx")
+colnames(poids) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435", "Confoux - 430", "Confoux - 404", "Confoux - 405", "Sica - 415", "Sica - 428", "Sica - 444", "Sica - 412", "Sica - Y", "Sica - 89")
+
+# Sélectionner et filtrer les données du poids
+poids_sica <- poids[, c(1, (ncol(poids) - 5):ncol(poids))]
+poids_restreint <- subset(poids_sica, date <= "2023-04-11 02:00:00" & date >= "2023-04-10 00:00:00")
+
+poids_moyen <- data.frame(date = poids_restreint2$date, poids = rowMeans(poids_restreint2[,-1])) 
+poids_moyen$date_num <- as.numeric(poids_restreint2$date)
+
+# Ajuster le modèle linéaire segmenté pour le poids moyen
+modele <- lm(poids ~ date_num, data = poids_moyen)
+modele_segmente <- segmented(modele, seg.Z = ~date_num, npsi = 4, silent = TRUE)
+
+# Ajouter les prédictions du modèle segmenté du poids moyen
+poids_moyen$prediction <- predict(modele_segmente, newdata = data.frame(date_num = poids_moyen$date_num))
+
+# Graphique avec couleur de fond selon le poids
+graphique_global <- ggplot() +
+  
+  # Tracer la courbe de la différence entrées - sorties
+  geom_line(data = sica_moyenne, aes(x = date, y = prediction, color = "Différence Entrées - Sorties"), size = 1) +
+  
+  geom_line(data = poids_moyen, aes(x = date, y = (prediction - 46.5) * 700/2 - 200, 
+                            color = "Poids moyen"), size = 1) +
+  
+  # Définir les couleurs pour la courbe
+  scale_color_manual(values = c("Différence Entrées - Sorties" = "purple", "Poids moyen"="red"), name = "Mouvement") +
+  
+  # Définir l'échelle de l'axe x
+  scale_x_datetime(date_labels = "%H:%M", name = "Heure") +
+  
+  # Définir l'échelle de l'axe y
+  scale_y_continuous(name = "Différence Entrées - Sorties", 
+                     sec.axis = sec_axis(~ (. + 200)/(700/2) + 46.5, 
+                                        name = "Poids moyen")) +
+  
+  # Ajouter un thème esthétique
+  theme_minimal()
+
+# Afficher le graphique
+print(graphique_global)
+
 
 ```
 
-```{r}
+exemple analyse : entre 8h et 12h environ la différence Entrées-Sorties devient négative cela signifie qu'il y a plus de sorties que d'entrées et on observe alors une baisse du poids (logique). Cela montre une possible corrélation entre poids et activité de la rûche.
 
-```
+
+
+(Je n'ai pas réussi à faire un graphe avec poids en abscisse et entrées-sorties en ordonnée car je ne sais pas comment gérer la variable de temps.)
 
 ```{r}
 
