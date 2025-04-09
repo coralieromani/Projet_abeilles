@@ -434,7 +434,7 @@ print(graphique_global)
 #TEST MARINE
 
 Ajustement de l'axe des poids moyen à partir du code du Chunk 2
-```{r, include = FALSE}
+```{r}
 library(ggplot2)
 library(grid)
 
@@ -445,10 +445,7 @@ graphique_global <- ggplot() +
   geom_line(data = sica_entrees, aes(x = date, y = prediction, color = "Entrées"), size = 1) +
   geom_line(data = sica_sorties, aes(x = date, y = prediction, color = "Sorties"), size = 1) +
   
-  # Créer un deuxième axe y pour le poids moyen
-  scale_y_continuous(name = "Entrées / Sorties", 
-                     limits = c(-50, 800)) + #modifier en mettant le min et le max ?
-  
+ 
   # Ajouter la courbe du poids moyen sur un axe secondaire
   geom_line(data = poids_moyen, aes(x = date, y = (prediction - 46) * 800/2 + 0, 
                             color = "Poids moyen"), size = 1) +
@@ -476,7 +473,7 @@ print(graphique_global)
 ```
 
 Graphique de comparaison de l'évolution du poids et de la différence entre les entrées sorties sur une journée (effectué à partir du code du Chunk 4).
-```{r, include = FALSE}
+```{r}
 library(readxl)
 library(ggplot2)
 library(dplyr)
