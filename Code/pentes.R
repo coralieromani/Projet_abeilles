@@ -110,29 +110,6 @@ sica_diff <- sica_long %>%
   pivot_wider(names_from = Mouvement, values_from = moyenne) %>%
   mutate(diff_ES = Entrées - Sorties)
 
-# # Filtrer pour la date du 10 avril 2023
-# sica_10avril <- sica_diff %>% filter(as.Date(date) %in% as.Date(c("2023-04-10"))) %>%
-#   mutate(
-#     date_num = as.numeric(difftime(date, floor_date(date, "day"), units = "mins"))
-#   )
-# 
-# 
-# diff_modele <- lm(diff_ES ~ date_num, data = sica_10avril)
-# diff_seg <- segmented(diff_modele, seg.Z = ~ date_num, npsi = 4, silent = TRUE)
-# 
-# sica_10avril$seg_fit <- predict(diff_seg)
-# 
-# ggplot(sica_10avril, aes(x = as.POSIXct(date))) +
-#   geom_line(aes(y = diff_ES), color = "skyblue") +
-#   geom_line(aes(y = seg_fit), color = "red") +
-#   labs(
-#     title = "Régression segmentée : ENTRÉES - SORTIES le 10 avril 2023",
-#     x = "Heure",
-#     y = "Différence"
-#   ) +
-#   scale_x_datetime(date_labels = "%H:%M", date_breaks = "1 hour") +
-#   theme_minimal()
-
 sica_diff <- sica_diff %>%
   mutate(
     heure = as.numeric(format(date, "%H")) * 60 + as.numeric(format(date, "%M"))
@@ -164,9 +141,10 @@ breakpoints_table <- breakpoints_table %>%
 breakpoints_table <- breakpoints_table %>%
   mutate(pente_ES = (diff_ES_BP_2 - diff_ES_BP_1) / (heure_BP_2 - heure_BP_1))
          
+ggplot(breakpoints_table, aes(x = pente_ES, y = pente_bp)) +
+  geom_point() +
+  theme_minimal()
 
-ggplot(breakpoints_table, aes(x=pente_ES,y=pente_bp)) + geom_point() + theme_minimal()
-  
 breakpoints_table_ext <- breakpoints_table %>%
   filter(
     between(pente_ES, -3, 5),
@@ -179,3 +157,41 @@ ggplot(breakpoints_table_ext, aes(x = pente_ES, y = pente_bp)) +
 
 
        
+# Filtrer pour la date du 10 avril 2023
+sica_10avril <- sica_diff %>% filter(as.Date(date) %in% as.Date(c("2023-04-10")))
+
+bp_10avril <- breakpoints_table_ext %>% filter(as.Date(date) %in% as.Date(c("2023-04-10")))
+
+bp2_10avril = tibble(x=c(bp_10avril$heure_BP_1,bp_10avril$heure_BP_2),y=c(bp_10avril$diff_ES_BP_1,bp_10avril$diff_ES_BP_2))
+
+diff_modele <- lm(diff_ES ~ heure, data = sica_10avril)
+
+ggplot(sica_10avril, aes(x = heure)) +
+  geom_line(aes(y = diff_ES), color = "skyblue") +
+  geom_point(data=bp2_10avril, aes(x=x,y=y), color='red', size=1.9) +
+  geom_line(data=bp2_10avril, aes(x=x,y=y), color='red', size=1) +
+  labs(
+    title = "Régression segmentée : ENTRÉES - SORTIES le 10 avril 2023",
+    x = "Heure",
+    y = "Différence"
+  ) +theme_minimal()
+
+
+# Filtrer pour la date du 13 octobre 2023
+sica_13oct <- sica_diff %>% filter(as.Date(date) %in% as.Date(c("2023-10-13")))
+
+bp_13oct <- breakpoints_table_ext %>% filter(as.Date(date) %in% as.Date(c("2023-10-13")))
+
+bp2_13oct = tibble(x=c(bp_13oct$heure_BP_1,bp_13oct$heure_BP_2),y=c(bp_13oct$diff_ES_BP_1,bp_13oct$diff_ES_BP_2))
+
+diff_modele <- lm(diff_ES ~ heure, data = sica_13oct)
+
+ggplot(sica_13oct, aes(x = heure)) +
+  geom_line(aes(y = diff_ES), color = "skyblue") +
+  geom_point(data=bp2_13oct, aes(x=x,y=y), color='red', size=1.9) +
+  geom_line(data=bp2_13oct, aes(x=x,y=y), color='red', size=1) +
+  labs(
+    title = "Régression segmentée : ENTRÉES - SORTIES le 13 octobre 2023",
+    x = "Heure",
+    y = "Différence"
+  ) +theme_minimal()
