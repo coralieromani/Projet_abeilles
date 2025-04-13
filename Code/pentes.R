@@ -194,4 +194,4 @@ ggplot(sica_13oct, aes(x = heure)) +
     title = "Régression segmentée : ENTRÉES - SORTIES le 13 octobre 2023",
     x = "Heure",
     y = "Différence"
-  ) +theme_minimal()
+  ) + theme_minimal()

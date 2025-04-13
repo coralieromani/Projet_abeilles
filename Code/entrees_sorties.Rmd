@@ -30,7 +30,8 @@ graphique_global <- ggplot(sica_13octobre, aes(x = date, y = valeur, color = ruc
   geom_point(aes(shape = mouvement), size = 1.5) +
   scale_shape_manual(values = c("Entrées" = 7, "Sorties" = 16)) +  # Légende simplifiée
   scale_color_brewer(palette = "Paired", guide = "none") +  # Utilisation d'une palette avec plus de couleurs
-  labs(title = "Activité des ruches le 13 octobre  2023",
+  labs(
+    #title = "Activité des ruches le 13 octobre  2023",
        x = "Date",
        y = "Nombre d'entrées/sorties",
        shape = "Mouvement") +
@@ -49,7 +50,8 @@ graphique_global2 <- ggplot(sica_10avril, aes(x = date, y = valeur, color = ruch
   geom_point(aes(shape = mouvement), size = 1.5) +
   scale_shape_manual(values = c("Entrées" = 7, "Sorties" = 16)) +  # Légende simplifiée
   scale_color_brewer(palette = "Paired", guide = "none") +  # Utilisation d'une palette avec plus de couleurs
-  labs(title = "Activité des ruches le 10 avril 2023",
+  labs(
+    #title = "Activité des ruches le 10 avril 2023",
        x = "Date",
        y = "Nombre d'entrées/sorties",
        shape = "Mouvement") +

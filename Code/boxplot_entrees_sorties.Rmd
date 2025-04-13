@@ -29,7 +29,8 @@ activity_sorties <- activity_long %>% filter(mouvement == "Sorties")
 
 ggplot(activity_entrees, aes(x = ruche, y = valeur, fill = ruche)) +
   geom_boxplot() +
-  labs(title = "Distribution des entrées par ruche",
+  labs(
+    #title = "Distribution des entrées par ruche",
        x = "Ruche",
        y = "Nombre d'entrées") +
   theme_minimal() +
@@ -37,7 +38,8 @@ ggplot(activity_entrees, aes(x = ruche, y = valeur, fill = ruche)) +
 
 ggplot(activity_sorties, aes(x = ruche, y = valeur, fill = ruche)) +
   geom_boxplot() +
-  labs(title = "Distribution des sorties par ruche",
+  labs(
+    #title = "Distribution des sorties par ruche",
        x = "Ruche",
        y = "Nombre de sorties") +
   theme_minimal() +

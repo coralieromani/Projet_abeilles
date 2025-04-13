@@ -110,19 +110,34 @@ BP_2_numeric <- as.numeric(substr(breakpoints_table$BP_2, 1, 2)) +
 lm_BP1 <- lm(BP_1_numeric ~ as.numeric(date), data = breakpoints_table)
 lm_BP2 <- lm(BP_2_numeric ~ as.numeric(date), data = breakpoints_table)
 
+# Calcul du R2
+R2_BP1 <- summary(lm_BP1)$r.squared
+R2_BP2 <- summary(lm_BP2)$r.squared
+
 #Droites de régression pour les breakpoints 1 et 2
 BP_1_trend <- predict(lm_BP1, newdata = breakpoints_table)
 BP_2_trend <- predict(lm_BP2, newdata = breakpoints_table)
 
+# Calcul d'une position pour placer les R² (90% du range de dates)
+date_range <- range(breakpoints_table$date)
+annot_date <- date_range[1] + 0.9 * as.numeric(difftime(date_range[2], date_range[1], units = "days"))
+
 ggplot(breakpoints_table, aes(x = date)) +
   geom_point(aes(y = BP_1_numeric, color = "Breakpoint 1")) +
   geom_point(aes(y = BP_2_numeric, color = "Breakpoint 2")) +
-  geom_line(aes(y = BP_1_trend), linetype = "solid", col = 'red', size=1) +
-  geom_line(aes(y = BP_2_trend), linetype = "solid", col = 'red', size=1) +
-  labs(title = "Comparaison des breakpoints 1 et 2", x = "Jour", y = "Heure") +
+  geom_line(aes(y = BP_1_trend), linetype = "solid", col = 'darkgreen', size=1) +
+  geom_line(aes(y = BP_2_trend), linetype = "solid", col = "#D5006D", size=1) +
+  labs(
+    #title = "Comparaison des breakpoints 1 et 2", 
+    x = "Jour", y = "Heure") +
   scale_y_continuous(breaks = seq(0, 24, by = 1), limits = c(0, 24)) +
   scale_color_manual(values = c("Breakpoint 1" = "green", "Breakpoint 2" = "pink"), name = "Breakpoints") +
-  theme_minimal()
+  theme_minimal() +
+  # Ajouter les R2 sur le graphique
+  annotate("text", x = max(breakpoints_table$date) * 0.9, y = max(BP_1_numeric), label = paste("R² BP1 = ", round(R2_BP1, 2)), color = "darkgreen", hjust = 0) +
+  annotate("text", x = max(breakpoints_table$date) * 0.9, y = max(BP_2_numeric), label = paste("R² BP2 = ", round(R2_BP2, 2)), color = "#D5006D", hjust = 0)
+
+#Explication des ajouts :
 
 breakpoints_table <- breakpoints_table %>%
   mutate(variation_poids = (poids_BP_2 - poids_BP_1) / (BP_2_numeric - BP_1_numeric))
