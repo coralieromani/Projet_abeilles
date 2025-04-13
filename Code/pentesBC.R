@@ -19,7 +19,7 @@ colnames(poids_ruches) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux -
                             "Sica - 415", "Sica - 428", "Sica - 444",
                             "Sica - 412", "Sica - Y", "Sica - 89")
 
-poids_sica <- poids_ruches[,1-8:13]
+poids_sica <- poids_ruches[,c(1,8:13)]
 poids_sica$date <- as.POSIXct(poids_sica$date,format = "%Y-%m-%d %H:%M:%S")
 poids_sica$heure <- as.numeric(format(poids_sica$date, "%H")) * 60 + as.numeric(format(poids_sica$date, "%M"))
 poids_sica$date <- as.Date(poids_sica$date)

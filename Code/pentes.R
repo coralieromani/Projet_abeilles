@@ -16,7 +16,7 @@ colnames(poids_ruches) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux -
                             "Sica - 415", "Sica - 428", "Sica - 444",
                             "Sica - 412", "Sica - Y", "Sica - 89")
 
-poids_sica <- poids_ruches[,1-8:13]
+poids_sica <- poids_ruches[,c(1,8:13)]
 poids_sica$date <- as.POSIXct(poids_sica$date,format = "%Y-%m-%d %H:%M:%S")
 poids_sica$heure <- as.numeric(format(poids_sica$date, "%H")) * 60 + as.numeric(format(poids_sica$date, "%M"))
 poids_sica$date <- as.Date(poids_sica$date)
@@ -155,8 +155,6 @@ ggplot(breakpoints_table_ext, aes(x = pente_ES, y = pente_bp)) +
   geom_point() +
   theme_minimal()
 
-
-       
 # Filtrer pour la date du 10 avril 2023
 sica_10avril <- sica_diff %>% filter(as.Date(date) %in% as.Date(c("2023-04-10")))
 
@@ -168,12 +166,16 @@ diff_modele <- lm(diff_ES ~ heure, data = sica_10avril)
 
 ggplot(sica_10avril, aes(x = heure)) +
   geom_line(aes(y = diff_ES), color = "skyblue") +
-  geom_point(data=bp2_10avril, aes(x=x,y=y), color='red', size=1.9) +
-  geom_line(data=bp2_10avril, aes(x=x,y=y), color='red', size=1) +
+  geom_point(data=bp2_10avril, aes(x=x,y=0), color='red', size=1.9) +
+  geom_line(data=bp2_10avril, aes(x=x,y=0), color='red', size=1) +
   labs(
-    title = "Régression segmentée : ENTRÉES - SORTIES le 10 avril 2023",
     x = "Heure",
     y = "Différence"
+  ) +
+  scale_x_continuous(
+    limits = c(0, 1440),  # Plage de 0 à 1440 minutes
+    breaks = seq(0, 1440, by = 360), 
+    labels = function(x) format(as.POSIXct(x * 60, origin = "1970-01-01", tz = "UTC"), "%H:%M")  # Format HH:MM
   ) +theme_minimal()
 
 
@@ -188,10 +190,15 @@ diff_modele <- lm(diff_ES ~ heure, data = sica_13oct)
 
 ggplot(sica_13oct, aes(x = heure)) +
   geom_line(aes(y = diff_ES), color = "skyblue") +
-  geom_point(data=bp2_13oct, aes(x=x,y=y), color='red', size=1.9) +
-  geom_line(data=bp2_13oct, aes(x=x,y=y), color='red', size=1) +
+  geom_point(data=bp2_13oct, aes(x=x,y=0), color='red', size=1.9) +
+  geom_line(data=bp2_13oct, aes(x=x,y=0), color='red', size=1) +
   labs(
-    title = "Régression segmentée : ENTRÉES - SORTIES le 13 octobre 2023",
     x = "Heure",
     y = "Différence"
-  ) + theme_minimal()
+  ) + 
+  scale_x_continuous(
+    limits = c(0, 1440),  # Plage de 0 à 1440 minutes
+    breaks = seq(0, 1440, by = 360), 
+    labels = function(x) format(as.POSIXct(x * 60, origin = "1970-01-01", tz = "UTC"), "%H:%M")  # Format HH:MM
+  ) +
+  theme_minimal()

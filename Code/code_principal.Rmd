@@ -71,8 +71,7 @@ colnames(poids) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435",
                             "Sica - 415", "Sica - 428", "Sica - 444",
                             "Sica - 412", "Sica - Y", "Sica - 89")
 
-poids_sica <- poids %>%
-  select(1, (ncol(poids)-5):ncol(poids))
+poids_sica <- poids[, c(1, 8:13)]
 
 # Extraire les données pour la rûche
 poids_restreint2 <- subset(poids_sica, date <= "2023-04-10 23:00:00" & date >= "2023-04-10 00:00:00")
@@ -92,16 +91,49 @@ breakpoints <- modele_segmente$psi[, "Est."]
 # Convertir les breakpoints numériques en dates
 breakpoints_dates <- as.POSIXct(breakpoints)
 
-# Tracer le graphique avec la régression linéaire segmentée
+# Début et fin des données (réels)
+start_date <- poids_moyen$date[1]
+end_date <- poids_moyen$date[nrow(poids_moyen)]
+start_p <- poids_moyen$poids[1]
+end_p <- poids_moyen$poids[nrow(poids_moyen)]
+
+# Poids prédit aux premiers et derniers breakpoints
+first_bp_p <- predict(modele_segmente, newdata = data.frame(date_num = breakpoints[1]))
+last_bp_p <- predict(modele_segmente, newdata = data.frame(date_num = breakpoints[length(breakpoints)]))
+
+# Dates converties
+first_bp_date <- breakpoints_dates[1]
+first_bp_date2 <- breakpoints_dates[4]
+
+last_bp_date <- breakpoints_dates[length(breakpoints)]
+
+# Tracer
 ggplot(poids_moyen, aes(x = date, y = poids)) +
   geom_point() +
-  geom_line(aes(y = predict(modele_segmente, newdata = poids_moyen)), color = "blue") +
   labs(x = "Heure", y = "Poids moyen") +
+
+  # Segment 1
+  geom_line(data = data.frame(date = c(end_date, first_bp_date),
+                              poids = c(end_p, first_bp_p)),
+            aes(x = date, y = poids), color = "blue", size = 1) +
+
+  # Segment 2
+  geom_line(data = data.frame(date = breakpoints_dates,
+                              poids = predict(modele_segmente, newdata = data.frame(date_num = breakpoints))),
+            aes(x = date, y = poids), color = "blue", size = 1) +
+# Segment 3
+  geom_line(data = data.frame(date = c(first_bp_date2, start_date),
+                              poids = c(last_bp_p, start_p)),
+            aes(x = date, y = poids), color = "blue", size = 1) +
+  
+  # Points rouges aux breakpoints
   geom_point(data = data.frame(date = breakpoints_dates,
-              poids = predict(modele_segmente, newdata = data.frame(date_num = breakpoints))),
-             aes(x = date, y = poids), color = "red", size = 3) + 
+                               poids = predict(modele_segmente, newdata = data.frame(date_num = breakpoints))),
+             aes(x = date, y = poids), color = "red", size = 3) +
+
   scale_x_datetime(labels = scales::date_format("%H:%M")) +
   theme_minimal()
+
 
 ```
 
