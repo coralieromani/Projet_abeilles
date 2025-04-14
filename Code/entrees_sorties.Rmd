@@ -21,7 +21,7 @@ sica_long <- sica %>%
     mouvement = ifelse(grepl("entrées", type), "Entrées", "Sorties")  # Identifier entrées/sorties
   )
 
-# Filtrer pour la date du 3 mai 2023
+# Filtrer pour la date du 13 octobre 2023
 sica_13octobre <- sica_long %>%
   filter(as.Date(date) == as.Date("2023-10-13"))
 
@@ -30,6 +30,7 @@ graphique_global <- ggplot(sica_13octobre, aes(x = date, y = valeur, color = ruc
   geom_point(aes(shape = mouvement), size = 1.5) +
   scale_shape_manual(values = c("Entrées" = 7, "Sorties" = 16)) +  # Légende simplifiée
   scale_color_brewer(palette = "Paired", guide = "none") +  # Utilisation d'une palette avec plus de couleurs
+  scale_x_datetime(date_labels = "%H:%M") +
   labs(
     #title = "Activité des ruches le 13 octobre  2023",
        x = "Date",
@@ -41,7 +42,7 @@ graphique_global <- ggplot(sica_13octobre, aes(x = date, y = valeur, color = ruc
 print(graphique_global)
 
 
-# Filtrer pour la date du 3 mai 2023
+# Filtrer pour la date du 10 avril 2023
 sica_10avril <- sica_long %>%
   filter(as.Date(date) == as.Date("2023-04-10"))
 
@@ -50,6 +51,7 @@ graphique_global2 <- ggplot(sica_10avril, aes(x = date, y = valeur, color = ruch
   geom_point(aes(shape = mouvement), size = 1.5) +
   scale_shape_manual(values = c("Entrées" = 7, "Sorties" = 16)) +  # Légende simplifiée
   scale_color_brewer(palette = "Paired", guide = "none") +  # Utilisation d'une palette avec plus de couleurs
+  scale_x_datetime(date_labels = "%H:%M") +
   labs(
     #title = "Activité des ruches le 10 avril 2023",
        x = "Date",
@@ -95,7 +97,8 @@ graphique_global_zoom <- ggplot(sica_13octobre_filtre, aes(x = date, y = valeur,
   geom_point(aes(shape = mouvement), size = 1) +
   scale_shape_manual(values = c("Entrées" = 7, "Sorties" = 16)) +  # Légende simplifiée
   scale_color_brewer(palette = "Paired", guide = "none") +  # Utilisation d'une palette avec plus de couleurs
-  labs(title = "Activité des ruches le 13 octobre 2023 (sans valeurs extrêmes)",
+  scale_x_datetime(date_labels = "%H:%M") +
+  labs(
        x = "Date",
        y = "Nombre d'entrées/sorties",
        shape = "Mouvement") +

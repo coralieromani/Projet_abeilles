@@ -74,7 +74,7 @@ colnames(poids) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435",
 poids_sica <- poids[, c(1, 8:13)]
 
 # Extraire les données pour la rûche
-poids_restreint2 <- subset(poids_sica, date <= "2023-04-10 23:00:00" & date >= "2023-04-10 00:00:00")
+poids_restreint2 <- subset(poids_sica, date <= "2023-04-11 01:00:00" & date >= "2023-04-10 02:00:00")
 
 poids_moyen <- data.frame(date = poids_restreint2$date, poids = rowMeans(poids_restreint2[,-1])) 
 
@@ -122,18 +122,19 @@ ggplot(poids_moyen, aes(x = date, y = poids)) +
                               poids = predict(modele_segmente, newdata = data.frame(date_num = breakpoints))),
             aes(x = date, y = poids), color = "blue", size = 1) +
 # Segment 3
-  geom_line(data = data.frame(date = c(first_bp_date2, start_date),
+  geom_line(data = data.frame(date = c(first_bp_date2 , start_date),
                               poids = c(last_bp_p, start_p)),
             aes(x = date, y = poids), color = "blue", size = 1) +
-  
   # Points rouges aux breakpoints
   geom_point(data = data.frame(date = breakpoints_dates,
                                poids = predict(modele_segmente, newdata = data.frame(date_num = breakpoints))),
              aes(x = date, y = poids), color = "red", size = 3) +
-
-  scale_x_datetime(labels = scales::date_format("%H:%M")) +
+  scale_x_datetime(
+  labels = scales::date_format("%H:%M"),
+  limits = c(as.POSIXct("2023-04-10 00:00:00"),
+             as.POSIXct("2023-04-11 01:00:00"))
+) +
   theme_minimal()
-
 
 ```
 
