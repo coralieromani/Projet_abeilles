@@ -1,0 +1,237 @@
+---
+title: "graphes_poids_ES_diff"
+output: html_document
+date: "2025-04-19"
+---
+
+# graphiques combinés: poids, entrées, sorties, différence en fonction de l'heure de la journée pour le 10/04/23
+
+```{r}
+library(ggplot2)
+library(readxl)
+library(dplyr)
+library(tidyr)
+library(patchwork)
+
+# Charger et préparer les données de poids
+poids_ruches <- read_excel("BD/Weight_2023_Sica_Confoux.xlsx")
+colnames(poids_ruches) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435",
+                            "Confoux - 430", "Confoux - 404", "Confoux - 405",
+                            "Sica - 415", "Sica - 428", "Sica - 444",
+                            "Sica - 412", "Sica - Y", "Sica - 89")
+
+poids_sica <- poids_ruches[, c(1, 8:13)]
+poids_sica$date <- as.POSIXct(poids_sica$date, format = "%Y-%m-%d %H:%M:%S")
+poids_sica$heure_num <- as.numeric(format(poids_sica$date, "%H"))
+poids_sica <- poids_sica %>%
+  filter(as.Date(date) == as.Date("2023-04-10"))
+
+poids_moyens <- data.frame(
+  heure = poids_sica$heure_num,
+  poids = rowMeans(poids_sica[, 2:7], na.rm = TRUE)
+)
+
+# Charger et préparer les données d'activité
+sica <- read_excel("BD/Activity_Sica_2023.xlsx")
+sica_long <- sica %>%
+  pivot_longer(cols = -date, names_to = "type", values_to = "valeur") %>%
+  mutate(
+    ruche = sub("CPT_|-entrées|-sorties", "", type),
+    mouvement = ifelse(grepl("entrées", type), "Entrées", "Sorties"),
+    heure = as.numeric(format(date, "%H"))
+  ) %>%
+  filter(as.Date(date) == as.Date("2023-04-10"))
+
+sica_moyenne <- sica_long %>%
+  group_by(heure, mouvement) %>%
+  summarise(moyenne_valeur = mean(valeur, na.rm = TRUE), .groups = "drop")
+
+## moyennes faites sur toutes les ruches et sur l'heure entière à chaque fois
+
+# Calcul de la différence (entrées - sorties)
+sica_diff <- sica_moyenne %>%
+  pivot_wider(names_from = mouvement, values_from = moyenne_valeur) %>%
+  mutate(diff = Entrées - Sorties)
+
+# Graphique 1 : Poids moyen
+graph_poids <- ggplot(poids_moyens, aes(x = heure, y = poids)) +
+  geom_point(color = "steelblue", size = 2) +
+  labs(x = NULL, y = "Poids (kg)") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(),
+        axis.title.x = element_blank())
+
+# Graphique 2 : Activité entrées/sorties
+graph_entrees_sorties <- ggplot(sica_moyenne, aes(x = heure, y = moyenne_valeur, color = mouvement)) +
+  geom_point(size = 2) +
+  scale_color_manual(values = c("Entrées" = "purple", "Sorties" = "pink")) +
+  labs(x = NULL, y = "Activité", color = "Mouvement") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(),
+        axis.title.x = element_blank())
+
+# Graphique 3 : Différences entrées - sorties
+graph_diff <- ggplot(sica_diff, aes(x = heure, y = diff, color = "Différence")) +
+  geom_point(size = 2) +
+  scale_color_manual(values = c("Différence" = "orange")) +
+  labs(x = "Heure", y = "Entrées - Sorties", color = "") +
+  theme_minimal()
+
+# Affichage combiné
+(graph_poids / graph_entrees_sorties / graph_diff) + plot_layout(guides = "collect") & theme(legend.position = "bottom")
+
+```
+# graphiques combinés: poids, entrées, sorties, différence en fonction de l'heure de la journée pour le 13/10/23
+
+```{r}
+library(ggplot2)
+library(readxl)
+library(dplyr)
+library(tidyr)
+library(patchwork)
+
+# Charger et préparer les données de poids
+poids_ruches <- read_excel("BD/Weight_2023_Sica_Confoux.xlsx")
+colnames(poids_ruches) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435",
+                            "Confoux - 430", "Confoux - 404", "Confoux - 405",
+                            "Sica - 415", "Sica - 428", "Sica - 444",
+                            "Sica - 412", "Sica - Y", "Sica - 89")
+
+poids_sica <- poids_ruches[, c(1, 8:13)]
+poids_sica$date <- as.POSIXct(poids_sica$date, format = "%Y-%m-%d %H:%M:%S")
+poids_sica$heure_num <- as.numeric(format(poids_sica$date, "%H"))
+poids_sica <- poids_sica %>%
+  filter(as.Date(date) == as.Date("2023-10-13"))
+
+poids_moyens <- data.frame(
+  heure = poids_sica$heure_num,
+  poids = rowMeans(poids_sica[, 2:7], na.rm = TRUE)
+)
+
+# Charger et préparer les données d'activité
+sica <- read_excel("BD/Activity_Sica_2023.xlsx")
+sica_long <- sica %>%
+  pivot_longer(cols = -date, names_to = "type", values_to = "valeur") %>%
+  mutate(
+    ruche = sub("CPT_|-entrées|-sorties", "", type),
+    mouvement = ifelse(grepl("entrées", type), "Entrées", "Sorties"),
+    heure = as.numeric(format(date, "%H"))
+  ) %>%
+  filter(as.Date(date) == as.Date("2023-10-13"))
+
+sica_moyenne <- sica_long %>%
+  group_by(heure, mouvement) %>%
+  summarise(moyenne_valeur = mean(valeur, na.rm = TRUE), .groups = "drop")
+
+## moyennes faites sur toutes les ruches et sur l'heure entière à chaque fois
+
+# Calcul de la différence (entrées - sorties)
+sica_diff <- sica_moyenne %>%
+  pivot_wider(names_from = mouvement, values_from = moyenne_valeur) %>%
+  mutate(diff = Entrées - Sorties)
+
+# Graphique 1 : Poids moyen
+graph_poids <- ggplot(poids_moyens, aes(x = heure, y = poids)) +
+  geom_point(color = "steelblue", size = 2) +
+  labs(x = NULL, y = "Poids (kg)") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(),
+        axis.title.x = element_blank())
+
+# Graphique 2 : Activité entrées/sorties
+graph_entrees_sorties <- ggplot(sica_moyenne, aes(x = heure, y = moyenne_valeur, color = mouvement)) +
+  geom_point(size = 2) +
+  scale_color_manual(values = c("Entrées" = "purple", "Sorties" = "pink")) +
+  labs(x = NULL, y = "Activité", color = "Mouvement") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(),
+        axis.title.x = element_blank())
+
+# Graphique 3 : Différences entrées - sorties
+graph_diff <- ggplot(sica_diff, aes(x = heure, y = diff, color = "Différence")) +
+  geom_point(size = 2) +
+  scale_color_manual(values = c("Différence" = "orange")) +
+  labs(x = "Heure", y = "Entrées - Sorties", color = "") +
+  theme_minimal()
+
+# Affichage combiné
+(graph_poids / graph_entrees_sorties / graph_diff) + plot_layout(guides = "collect") & theme(legend.position = "bottom")
+
+```
+
+# graphiques combinés: poids, entrées, sorties, différence en fonction de l'heure de la journée (moyenne sur toutes les données)
+
+```{r}
+library(ggplot2)
+library(readxl)
+library(dplyr)
+library(tidyr)
+library(patchwork)
+
+# Charger et préparer les données de poids
+poids_ruches <- read_excel("BD/Weight_2023_Sica_Confoux.xlsx")
+colnames(poids_ruches) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435",
+                            "Confoux - 430", "Confoux - 404", "Confoux - 405",
+                            "Sica - 415", "Sica - 428", "Sica - 444",
+                            "Sica - 412", "Sica - Y", "Sica - 89")
+
+poids_sica <- poids_ruches[, c(1, 8:13)]
+poids_sica$date <- as.POSIXct(poids_sica$date, format = "%Y-%m-%d %H:%M:%S")
+poids_sica$heure <- as.numeric(format(poids_sica$date, "%H"))
+
+# Moyenne du poids à chaque heure, toutes ruches Sica confondues
+poids_moyens <- poids_sica %>%
+  mutate(poids_moyen = rowMeans(across(2:7), na.rm = TRUE)) %>%
+  group_by(heure) %>%
+  summarise(poids = mean(poids_moyen, na.rm = TRUE))
+
+# Charger et préparer les données d'activité
+sica <- read_excel("BD/Activity_Sica_2023.xlsx")
+sica_long <- sica %>%
+  pivot_longer(cols = -date, names_to = "type", values_to = "valeur") %>%
+  mutate(
+    ruche = sub("CPT_|-entrées|-sorties", "", type),
+    mouvement = ifelse(grepl("entrées", type), "Entrées", "Sorties"),
+    heure = as.numeric(format(date, "%H"))
+  )
+
+# Moyenne des entrées et sorties par heure (toutes ruches confondues)
+sica_moyenne <- sica_long %>%
+  group_by(heure, mouvement) %>%
+  summarise(moyenne_valeur = mean(valeur, na.rm = TRUE), .groups = "drop")
+
+# Calcul de la différence (entrées - sorties) par heure
+sica_diff <- sica_moyenne %>%
+  pivot_wider(names_from = mouvement, values_from = moyenne_valeur) %>%
+  mutate(diff = Entrées - Sorties)
+
+# Graphique 1 : Poids moyen
+graph_poids <- ggplot(poids_moyens, aes(x = heure, y = poids)) +
+  geom_point(color = "steelblue", size = 2) +
+  labs(x = NULL, y = "Poids (kg)") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(),
+        axis.title.x = element_blank())
+
+# Graphique 2 : Activité entrées/sorties
+graph_entrees_sorties <- ggplot(sica_moyenne, aes(x = heure, y = moyenne_valeur, color = mouvement)) +
+  geom_point(size = 2) +
+  scale_color_manual(values = c("Entrées" = "purple", "Sorties" = "pink")) +
+  labs(x = NULL, y = "Activité", color = "Mouvement") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(),
+        axis.title.x = element_blank())
+
+# Graphique 3 : Différences entrées - sorties
+graph_diff <- ggplot(sica_diff, aes(x = heure, y = diff, color = "Différence")) +
+  geom_point(size = 2) +
+  scale_color_manual(values = c("Différence" = "orange")) +
+  labs(x = "Heure", y = "Entrées - Sorties", color = "") +
+  theme_minimal()
+
+# Affichage combiné
+(graph_poids / graph_entrees_sorties / graph_diff) + plot_layout(guides = "collect") & theme(legend.position = "bottom")
+
+```
+
+
