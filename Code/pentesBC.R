@@ -145,8 +145,7 @@ breakpoints_table <- breakpoints_table %>%
   mutate(pente_ES = (diff_ES_BP_2 - diff_ES_BP_1) / (heure_BP_2 - heure_BP_1))
 
 
-
-
+###########Représentation de toutes les pentes des BC
 
 # Création des segments et des points pour le graphique
 segments_plot <- data.frame()
@@ -241,5 +240,66 @@ ggplot() +
   theme_minimal()
 
 
+############## Différences entrées sorties sur une journée, avec représentation de de l'intervalle de temps du BC
+
+ggplot(breakpoints_table, aes(x = pente_ES, y = pente_bp)) +
+  geom_point() +
+  theme_minimal()
+
+breakpoints_table_ext <- breakpoints_table %>%
+  filter(
+    between(pente_ES, -3, 5),
+    between(pente_bp, -2.5, 1)
+  )
+
+ggplot(breakpoints_table_ext, aes(x = pente_ES, y = pente_bp)) +
+  geom_point() +
+  theme_minimal()
+
+# Filtrer pour la date du 10 avril 2023
+sica_10avril <- sica_diff %>% filter(as.Date(date) %in% as.Date(c("2023-04-10")))
+
+bp_10avril <- breakpoints_table_ext %>% filter(as.Date(date) %in% as.Date(c("2023-04-10")))
+
+bp2_10avril = tibble(x=c(bp_10avril$heure_BP_1,bp_10avril$heure_BP_2),y=c(bp_10avril$diff_ES_BP_1,bp_10avril$diff_ES_BP_2))
+
+diff_modele <- lm(diff_ES ~ heure, data = sica_10avril)
+
+ggplot(sica_10avril, aes(x = heure)) +
+  geom_line(aes(y = diff_ES), color = "skyblue") +
+  geom_point(data=bp2_10avril, aes(x=x,y=0), color='red', size=1.9) +
+  geom_line(data=bp2_10avril, aes(x=x,y=0), color='red', size=1) +
+  labs(
+    x = "Heure",
+    y = "Différence"
+  ) +
+  scale_x_continuous(
+    limits = c(0, 1440),  # Plage de 0 à 1440 minutes
+    breaks = seq(0, 1440, by = 360), 
+    labels = function(x) format(as.POSIXct(x * 60, origin = "1970-01-01", tz = "UTC"), "%H:%M")  # Format HH:MM
+  ) +theme_minimal()
 
 
+# Filtrer pour la date du 13 octobre 2023
+sica_13oct <- sica_diff %>% filter(as.Date(date) %in% as.Date(c("2023-10-13")))
+
+bp_13oct <- breakpoints_table_ext %>% filter(as.Date(date) %in% as.Date(c("2023-10-13")))
+
+bp2_13oct = tibble(x=c(bp_13oct$heure_BP_1,bp_13oct$heure_BP_2),y=c(bp_13oct$diff_ES_BP_1,bp_13oct$diff_ES_BP_2))
+
+diff_modele <- lm(diff_ES ~ heure, data = sica_13oct)
+
+ggplot(sica_13oct, aes(x = heure)) +
+  geom_line(aes(y = diff_ES), color = "skyblue") +
+  geom_point(data=bp2_13oct, aes(x=x,y=0), color='red', size=1.9) +
+  geom_line(data=bp2_13oct, aes(x=x,y=0), color='red', size=1) +
+  labs(
+    x = "Heure",
+    y = "Différence"
+  ) + 
+  scale_x_continuous(
+    limits = c(0, 1440),  # Plage de 0 à 1440 minutes
+    breaks = seq(0, 1440, by = 360), 
+    labels = function(x) format(as.POSIXct(x * 60, origin = "1970-01-01", tz = "UTC"), "%H:%M")  # Format HH:MM
+  ) +
+  theme_minimal()
