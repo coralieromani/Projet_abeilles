@@ -3,6 +3,7 @@ library(segmented)
 library(dplyr)
 library(ggplot2)
 library(purrr)
+library(tidyr)
 
 # Charger les données
 poids_ruches <- read_excel("BD/Weight_2023_Sica_Confoux.xlsx")

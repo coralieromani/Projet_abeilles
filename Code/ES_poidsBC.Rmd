@@ -1,0 +1,72 @@
+```{r}
+library(readxl)
+library(segmented)
+library(dplyr)
+library(ggplot2)
+library(purrr)
+```
+
+
+```{r}
+breakpoints_table = readRDS("breakpoints_table.rds")
+sica_diff = readRDS("sica_diff.rds")
+poids_moyen = readRDS("poids_moyen.rds")
+```
+
+## POIDS MOYEN DU 10/04/2023
+```{r}
+poids_moyen <- poids_moyen %>%
+  left_join(
+    sica_diff %>% dplyr::select(date, heure, Entrées, Sorties),
+    by = c("date", "heure")
+  )
+poids_moyen <- poids_moyen %>% mutate (diff_ES = Entrées - Sorties) %>% drop_na(Entrées, Sorties)
+
+
+poids_moyen_10avril = poids_moyen %>% filter(date == "2023-04-10")
+```
+
+# Entrées
+```{r}
+ggplot(poids_moyen_10avril, aes(x = poids, y = Entrées)) + geom_line(colour ="skyblue") + geom_point(colour ="red") + theme_minimal()
+```
+
+# Sorties
+```{r}
+ggplot(poids_moyen_10avril, aes(x = poids, y = Sorties)) + geom_line(colour ="skyblue") + geom_point(colour ="red") + theme_minimal()
+```
+
+# Différences Entrées - Sorties
+```{r}
+ggplot(poids_moyen_10avril, aes(x = poids, y = diff_ES)) + geom_line(colour ="skyblue") + geom_point(colour ="red") + theme_minimal()
+```
+
+
+## MOYENNE SUR UNE JOURNÉE
+
+# Entrées
+```{r}
+poids_moyen_journee <- poids_moyen %>%
+  group_by(heure) %>%
+  summarise(
+    poids_moyen = mean(poids, na.rm = TRUE),
+    entree_moyenne = mean(Entrées, na.rm = TRUE),
+    sortie_moyenne = mean(Sorties, na.rm = TRUE),
+  ) %>% mutate(diff_ES_moyenne = entree_moyenne - sortie_moyenne) %>%
+  ungroup()
+```
+
+# Entrées
+```{r}
+ggplot(poids_moyen_journee, aes(x = poids_moyen, y = entree_moyenne)) + geom_line(colour ="skyblue") + geom_point(colour ="red") + theme_minimal()
+```
+
+# Sorties
+```{r}
+ggplot(poids_moyen_journee, aes(x = poids_moyen, y = sortie_moyenne)) + geom_line(colour ="skyblue") + geom_point(colour ="red") + theme_minimal()
+```
+
+# Différences Entrées - Sorties
+```{r}
+ggplot(poids_moyen_journee, aes(x = poids_moyen, y = diff_ES_moyenne)) + geom_line(colour ="skyblue") + geom_point(colour ="red") + theme_minimal()
+```
