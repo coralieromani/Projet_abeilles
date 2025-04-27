@@ -123,6 +123,49 @@ breakpoints_table <- breakpoints_table %>%
     heure_BP_2 = as.numeric(substr(BP_2, 1, 2)) * 60 + as.numeric(substr(BP_2, 4, 5))
   )
 
+# Pentes des entrées - sorties
+sica <- read_excel("BD/Activity_Sica_2023.xlsx")
+
+sica_long <- sica %>%
+  pivot_longer(cols = -date, names_to = "type", values_to = "valeur") %>%
+  mutate(
+    valeur = as.numeric(valeur),
+    ruche = sub("CPT_|-entrées|-sorties", "", type),
+    Mouvement = ifelse(grepl("entrées", type), "Entrées", "Sorties")
+  ) %>%
+  filter(!is.na(valeur)) %>%  # Écarte les valeurs manquantes
+  group_by(date, Mouvement) %>%
+  summarise(moyenne = mean(valeur, na.rm = TRUE), .groups = "drop")
+
+sica_diff <- sica_long %>%
+  pivot_wider(names_from = Mouvement, values_from = moyenne) %>%
+  mutate(diff_ES = Entrées - Sorties)
+
+sica_diff <- sica_diff %>%
+  mutate(
+    heure = as.numeric(format(date, "%H")) * 60 + as.numeric(format(date, "%M"))
+  ) %>% summarise(date=as.Date(date),heure,diff_ES)
+
+
+# Fonction modifiée : ne retourne jamais NA, prend la valeur la plus proche
+get_diff_ES_at_time <- function(current_date, target_heure) {
+  sica_day <- sica_diff %>% filter(date == current_date)
+  if (nrow(sica_day) == 0) return(NA)
+  closest_row <- sica_day[which.min(abs(sica_day$heure - target_heure)), ]
+  return(closest_row$diff_ES)
+}
+
+# Ajouter les valeurs diff_ES correspondantes
+breakpoints_table <- breakpoints_table %>%
+  mutate(
+    diff_ES_BP_1 = mapply(get_diff_ES_at_time, date, heure_BP_1),
+    diff_ES_BP_2 = mapply(get_diff_ES_at_time, date, heure_BP_2)
+  )
+
+breakpoints_table <- breakpoints_table %>%
+  mutate(pente_ES = (diff_ES_BP_2 - diff_ES_BP_1) / (heure_BP_2 - heure_BP_1))
+
 # Sauvegarde
 saveRDS(breakpoints_table, "breakpoints_table.rds")
+saveRDS(poids_moyen, "poids_moyen.rds")
 
