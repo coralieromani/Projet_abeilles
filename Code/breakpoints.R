@@ -144,7 +144,7 @@ sica_diff <- sica_long %>%
 sica_diff <- sica_diff %>%
   mutate(
     heure = as.numeric(format(date, "%H")) * 60 + as.numeric(format(date, "%M"))
-  ) %>% summarise(date=as.Date(date),heure,diff_ES)
+  ) %>% summarise(date=as.Date(date),heure,Entrées, Sorties, diff_ES)
 
 
 # Fonction modifiée : ne retourne jamais NA, prend la valeur la plus proche
@@ -168,4 +168,4 @@ breakpoints_table <- breakpoints_table %>%
 # Sauvegarde
 saveRDS(breakpoints_table, "breakpoints_table.rds")
 saveRDS(poids_moyen, "poids_moyen.rds")
-
+saveRDS(sica_diff,"sica_diff.rds")

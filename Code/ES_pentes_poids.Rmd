@@ -1,0 +1,96 @@
+```{r}
+library(readxl)
+library(segmented)
+library(dplyr)
+library(ggplot2)
+library(purrr)
+```
+
+
+```{r}
+breakpoints_table = readRDS("breakpoints_table.rds")
+sica_diff = readRDS("sica_diff.rds")
+```
+
+# Différences des entrées/sorties entre le BP1 et le BP2 en fonction de la pente du BC entre ces 2 BP
+```{r}
+breakpoints_table = breakpoints_table %>% mutate(diff_BP2_1 = diff_ES_BP_1 - diff_ES_BP_2)
+
+ggplot(breakpoints_table, aes(x = variation_poids, y = diff_BP2_1)) + geom_point(colour ="skyblue") + theme_minimal()
+```
+
+# Différences des entrées/sorties entre le BP1 et le BP2 en fonction de la pente du BC entre ces 2 BP (sans valeurs extrêmes)
+```{r}
+ggplot(breakpoints_table, aes(x = variation_poids, y = diff_BP2_1)) + geom_point(colour ="skyblue") +
+  scale_x_continuous(limits = c(-0.75, 0.05)) + theme_minimal()
+```
+
+# Différences des pentes entrées/sorties entre le BP1 et le BP2 en fonction de la pente du BC entre ces 2 BP (sans valeurs extrêmes)
+```{r}
+ggplot(breakpoints_table, aes(x = variation_poids, y = pente_ES)) + geom_point(colour ="skyblue") +
+  scale_x_continuous(limits = c(-0.75, 0.05)) + theme_minimal()
+```
+
+# Différences des entrées entre le BP1 et le BP2 en fonction de la pente du BC entre ces 2 BP
+```{r}
+get_diff_entrees <- function(current_date, target_heure) {
+  sica_day <- sica_diff %>% filter(date == current_date)
+  if (nrow(sica_day) == 0) return(NA)
+  closest_row <- sica_day[which.min(abs(sica_day$heure - target_heure)), ]
+  return(closest_row$Entrées)
+}
+
+breakpoints_table_entree <- breakpoints_table %>%
+  mutate(
+    entree_BP_1 = mapply(get_diff_entrees, date, heure_BP_1),
+    entree_BP_2 = mapply(get_diff_entrees, date, heure_BP_2),
+    pente_entree = (entree_BP_2 - entree_BP_1) / (heure_BP_2 - heure_BP_1),
+    entree_BP2_1 = entree_BP_1 - entree_BP_2
+  )
+
+ggplot(breakpoints_table_entree, aes(x = variation_poids, y = entree_BP2_1)) + geom_point(colour ="skyblue") + theme_minimal()
+```
+
+# Différences des entrées/sorties entre le BP1 et le BP2 en fonction de la pente du BC entre ces 2 BP (sans valeurs extrêmes)
+```{r}
+ggplot(breakpoints_table_entree, aes(x = variation_poids, y = entree_BP2_1)) + geom_point(colour ="skyblue") +
+  scale_x_continuous(limits = c(-0.75, 0.05)) + theme_minimal()
+```
+
+# Différences des pentes entrées/sorties entre le BP1 et le BP2 en fonction de la pente du BC entre ces 2 BP (sans valeurs extrêmes)
+```{r}
+ggplot(breakpoints_table_entree, aes(x = variation_poids, y = pente_entree)) + geom_point(colour ="skyblue") +
+  scale_x_continuous(limits = c(-0.75, 0.05)) + theme_minimal()
+```
+
+# Différences des sorties entre le BP1 et le BP2 en fonction de la pente du BC entre ces 2 BP
+```{r}
+get_diff_sorties <- function(current_date, target_heure) {
+  sica_day <- sica_diff %>% filter(date == current_date)
+  if (nrow(sica_day) == 0) return(NA)
+  closest_row <- sica_day[which.min(abs(sica_day$heure - target_heure)), ]
+  return(closest_row$Sorties)
+}
+
+breakpoints_table_sortie <- breakpoints_table %>%
+  mutate(
+    sortie_BP_1 = mapply(get_diff_sorties, date, heure_BP_1),
+    sortie_BP_2 = mapply(get_diff_sorties, date, heure_BP_2),
+    pente_sortie = (sortie_BP_2 - sortie_BP_1) / (heure_BP_2 - heure_BP_1),
+    sortie_BP2_1 = sortie_BP_1 - sortie_BP_2
+  )
+
+ggplot(breakpoints_table_sortie, aes(x = variation_poids, y = sortie_BP2_1)) + geom_point(colour ="skyblue") + theme_minimal()
+```
+
+# Différences des entrées/sorties entre le BP1 et le BP2 en fonction de la pente du BC entre ces 2 BP (sans valeurs extrêmes)
+```{r}
+ggplot(breakpoints_table_sortie, aes(x = variation_poids, y = sortie_BP2_1)) + geom_point(colour ="skyblue") +
+  scale_x_continuous(limits = c(-0.75, 0.05)) + theme_minimal()
+```
+
+# Différences des pentes entrées/sorties entre le BP1 et le BP2 en fonction de la pente du BC entre ces 2 BP (sans valeurs extrêmes)
+```{r}
+ggplot(breakpoints_table_sortie, aes(x = variation_poids, y = pente_sortie)) + geom_point(colour ="skyblue") +
+  scale_x_continuous(limits = c(-0.75, 0.05)) + theme_minimal()
+```
