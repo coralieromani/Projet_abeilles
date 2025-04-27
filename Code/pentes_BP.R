@@ -4,7 +4,7 @@ library(dplyr)
 library(ggplot2)
 
 breakpoints_table <- readRDS("breakpoints_table.rds")
-breakpoints_table_filtre <- readRDS("breakpoints_table_filtre.rds")
+poids_moyen <- readRDS("poids_moyen.rds")
 
 test <- subset(poids_moyen, date == "2023-04-22")
 modele <- lm(poids ~ heure, data = test)
@@ -80,6 +80,9 @@ ggplot(breakpoints_table, aes(x = date, y = variation_poids)) +
                                   max(breakpoints_table$variation_poids),
                                   by = 1)) +
   theme_minimal()
+
+breakpoints_table_filtre <- breakpoints_table %>%
+  filter(!date %in% as.Date(c("2023-05-10", "2023-09-18","2023-10-26")))
 
 modele_pente <- lm(variation_poids ~ as.numeric(date), data = breakpoints_table_filtre)
 
