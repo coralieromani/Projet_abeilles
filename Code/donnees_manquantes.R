@@ -1,6 +1,3 @@
-# Installer les packages nécessaires
-install.packages(c("dplyr", "tidyr", "openxlsx", "readxl", "lubridate"))
-
 # Charger les bibliothèques
 library(readxl)
 library(dplyr)
@@ -70,8 +67,5 @@ for (i in 1:nrow(confoux_missing_periods_filtered)) {
   final_table[final_table$Plage == plage, compteur] <- "X"
 }
 
-# Vérifier la table finale
-print(final_table)
-
-write.xlsx(final_table, "confou_donnees_manquantes.xlsx", rowNames = FALSE)
+saveRDS(final_table, "confoux_donnees_manquantes.rds")
 

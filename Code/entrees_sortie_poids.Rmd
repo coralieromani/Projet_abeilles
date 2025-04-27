@@ -674,12 +674,3 @@ graphique_global <- ggplot() +
 print(graphique_global)
 
 ```
-
-```{r}
-
-```
-
-```{r}
-
-```
-
