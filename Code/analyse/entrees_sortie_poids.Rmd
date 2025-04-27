@@ -13,7 +13,7 @@ library(segmented)
 library(gridExtra)
 
 # Charger les données
-poids <- read_excel("../BD/Weight_2023_Sica_Confoux.xlsx")
+poids <- read_excel("../../BD/Weight_2023_Sica_Confoux.xlsx")
 
 colnames(poids) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435",
                             "Confoux - 430", "Confoux - 404", "Confoux - 405",
@@ -59,7 +59,7 @@ library(tidyr)
 library(segmented)
 
 # Charger les données Activity_Sica
-sica <- read_excel("../BD/Activity_Sica_2023.xlsx")
+sica <- read_excel("../../BD/Activity_Sica_2023.xlsx")
 
 # Transformer les données en format long
 sica_long <- sica %>%
@@ -106,7 +106,7 @@ sica_entrees$prediction <- predict(modele_segmente_entrees, newdata = data.frame
 sica_sorties$prediction <- predict(modele_segmente_sorties, newdata = data.frame(date_num = sica_sorties$date_num))
 
 # Charger les données de poids des ruches
-poids <- read_excel("../BD/Weight_2023_Sica_Confoux.xlsx")
+poids <- read_excel("../../BD/Weight_2023_Sica_Confoux.xlsx")
 colnames(poids) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435",
                      "Confoux - 430", "Confoux - 404", "Confoux - 405",
                      "Sica - 415", "Sica - 428", "Sica - 444",
@@ -185,7 +185,7 @@ library(segmented)
 library(gridExtra)
 
 # Charger les données Activity_Sica
-sica <- read_excel("../BD/Activity_Sica_2023.xlsx")
+sica <- read_excel("../../BD/Activity_Sica_2023.xlsx")
 
 # Transformer les données en format long
 sica_long <- sica %>%
@@ -224,7 +224,7 @@ sica_entrees$prediction <- predict(modele_segmente_entrees, newdata = data.frame
 sica_sorties$prediction <- predict(modele_segmente_sorties, newdata = data.frame(date_num = sica_sorties$date_num))
 
 # Charger les données de poids des ruches
-poids <- read_excel("../BD/Weight_2023_Sica_Confoux.xlsx")
+poids <- read_excel("../../BD/Weight_2023_Sica_Confoux.xlsx")
 colnames(poids) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435", "Confoux - 430", "Confoux - 404", "Confoux - 405", "Sica - 415", "Sica - 428", "Sica - 444", "Sica - 412", "Sica - Y", "Sica - 89")
 
 # Sélectionner et filtrer les données du poids
@@ -276,7 +276,7 @@ library(segmented)
 library(gridExtra)
 
 # Charger les données Activity_Sica
-sica <- read_excel("../BD/Activity_Sica_2023.xlsx")
+sica <- read_excel("../../BD/Activity_Sica_2023.xlsx")
 
 # Transformer les données en format long
 sica_long <- sica %>%
@@ -306,7 +306,7 @@ diff_modele_segmente <- segmented(diff_modele, seg.Z = ~ date_num, npsi = 4, sil
 sica_moyenne$prediction <- predict(diff_modele_segmente, newdata = data.frame(date_num = sica_moyenne$date_num))
 
 # Charger les données de poids des ruches
-poids <- read_excel("../BD/Weight_2023_Sica_Confoux.xlsx")
+poids <- read_excel("../../BD/Weight_2023_Sica_Confoux.xlsx")
 colnames(poids) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435", "Confoux - 430", "Confoux - 404", "Confoux - 405", "Sica - 415", "Sica - 428", "Sica - 444", "Sica - 412", "Sica - Y", "Sica - 89")
 
 # Sélectionner et filtrer les données du poids
@@ -357,7 +357,7 @@ library(segmented)
 library(gridExtra)
 
 # Charger les données Activity_Sica
-sica <- read_excel("../BD/Activity_Sica_2023.xlsx")
+sica <- read_excel("../../BD/Activity_Sica_2023.xlsx")
 
 # Transformer les données en format long
 sica_long <- sica %>%
@@ -390,7 +390,7 @@ sica_moyenne <- sica_moyenne %>% group_by(as.Date(date)) %>%
   ) %>% ungroup()
 
 # Charger les données de poids des ruches
-poids <- read_excel("../BD/Weight_2023_Sica_Confoux.xlsx")
+poids <- read_excel("../../BD/Weight_2023_Sica_Confoux.xlsx")
 colnames(poids) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435", "Confoux - 430", "Confoux - 404", "Confoux - 405", "Sica - 415", "Sica - 428", "Sica - 444", "Sica - 412", "Sica - Y", "Sica - 89")
 
 # Sélectionner et filtrer les données du poids
@@ -490,7 +490,7 @@ library(segmented)
 library(gridExtra)
 
 # Charger les données Activity_Sica
-sica <- read_excel("../BD/Activity_Sica_2023.xlsx")
+sica <- read_excel("../../BD/Activity_Sica_2023.xlsx")
 
 # Transformer les données en format long
 sica_long <- sica %>%
@@ -520,7 +520,7 @@ diff_modele_segmente <- segmented(diff_modele, seg.Z = ~ date_num, npsi = 4, sil
 sica_moyenne$prediction <- predict(diff_modele_segmente, newdata = data.frame(date_num = sica_moyenne$date_num))
 
 # Charger les données de poids des ruches
-poids <- read_excel("../BD/Weight_2023_Sica_Confoux.xlsx")
+poids <- read_excel("../../BD/Weight_2023_Sica_Confoux.xlsx")
 colnames(poids) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435", "Confoux - 430", "Confoux - 404", "Confoux - 405", "Sica - 415", "Sica - 428", "Sica - 444", "Sica - 412", "Sica - Y", "Sica - 89")
 
 # Sélectionner et filtrer les données du poids
@@ -581,7 +581,7 @@ library(segmented)
 library(gridExtra)
 
 # Charger les données Activity_Sica
-sica <- read_excel("../BD/Activity_Sica_2023.xlsx")
+sica <- read_excel("../../BD/Activity_Sica_2023.xlsx")
 
 # Transformer les données en format long
 sica_long <- sica %>%
@@ -611,7 +611,7 @@ diff_modele_segmente <- segmented(diff_modele, seg.Z = ~ date_num, npsi = 4, sil
 sica_moyenne$prediction <- predict(diff_modele_segmente, newdata = data.frame(date_num = sica_moyenne$date_num))
 
 # Charger les données de poids des ruches
-poids <- read_excel("../BD/Weight_2023_Sica_Confoux.xlsx")
+poids <- read_excel("../../BD/Weight_2023_Sica_Confoux.xlsx")
 colnames(poids) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435", "Confoux - 430", "Confoux - 404", "Confoux - 405", "Sica - 415", "Sica - 428", "Sica - 444", "Sica - 412", "Sica - Y", "Sica - 89")
 
 # Sélectionner et filtrer les données du poids

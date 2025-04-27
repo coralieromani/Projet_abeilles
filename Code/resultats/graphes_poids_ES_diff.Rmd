@@ -14,7 +14,7 @@ library(tidyr)
 library(patchwork)
 
 # Charger et préparer les données de poids
-poids_ruches <- read_excel("BD/Weight_2023_Sica_Confoux.xlsx")
+poids_ruches <- read_excel("../../BD/Weight_2023_Sica_Confoux.xlsx")
 colnames(poids_ruches) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435",
                             "Confoux - 430", "Confoux - 404", "Confoux - 405",
                             "Sica - 415", "Sica - 428", "Sica - 444",
@@ -32,7 +32,7 @@ poids_moyens <- data.frame(
 )
 
 # Charger et préparer les données d'activité
-sica <- read_excel("BD/Activity_Sica_2023.xlsx")
+sica <- read_excel("../../BD/Activity_Sica_2023.xlsx")
 sica_long <- sica %>%
   pivot_longer(cols = -date, names_to = "type", values_to = "valeur") %>%
   mutate(
@@ -91,7 +91,7 @@ library(tidyr)
 library(patchwork)
 
 # Charger et préparer les données de poids
-poids_ruches <- read_excel("BD/Weight_2023_Sica_Confoux.xlsx")
+poids_ruches <- read_excel("../../BD/Weight_2023_Sica_Confoux.xlsx")
 colnames(poids_ruches) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435",
                             "Confoux - 430", "Confoux - 404", "Confoux - 405",
                             "Sica - 415", "Sica - 428", "Sica - 444",
@@ -109,7 +109,7 @@ poids_moyens <- data.frame(
 )
 
 # Charger et préparer les données d'activité
-sica <- read_excel("BD/Activity_Sica_2023.xlsx")
+sica <- read_excel("../../BD/Activity_Sica_2023.xlsx")
 sica_long <- sica %>%
   pivot_longer(cols = -date, names_to = "type", values_to = "valeur") %>%
   mutate(
@@ -169,7 +169,7 @@ library(tidyr)
 library(patchwork)
 
 # Charger et préparer les données de poids
-poids_ruches <- read_excel("BD/Weight_2023_Sica_Confoux.xlsx")
+poids_ruches <- read_excel("../../BD/Weight_2023_Sica_Confoux.xlsx")
 colnames(poids_ruches) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435",
                             "Confoux - 430", "Confoux - 404", "Confoux - 405",
                             "Sica - 415", "Sica - 428", "Sica - 444",
@@ -186,7 +186,7 @@ poids_moyens <- poids_sica %>%
   summarise(poids = mean(poids_moyen, na.rm = TRUE))
 
 # Charger et préparer les données d'activité
-sica <- read_excel("BD/Activity_Sica_2023.xlsx")
+sica <- read_excel("../../BD/Activity_Sica_2023.xlsx")
 sica_long <- sica %>%
   pivot_longer(cols = -date, names_to = "type", values_to = "valeur") %>%
   mutate(

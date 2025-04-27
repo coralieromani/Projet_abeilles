@@ -14,7 +14,7 @@ library(segmented)
 library(gridExtra)
 
 # Charger les données
-poids <- read_excel("../BD/Weight_2023_Sica_Confoux.xlsx")
+poids <- read_excel("../../BD/Weight_2023_Sica_Confoux.xlsx")
 
 colnames(poids) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435",
                             "Confoux - 430", "Confoux - 404", "Confoux - 405",
@@ -64,7 +64,7 @@ library(segmented)
 library(gridExtra)
 
 # Charger les données
-poids <- read_excel("../BD/Weight_2023_Sica_Confoux.xlsx")
+poids <- read_excel("../../BD/Weight_2023_Sica_Confoux.xlsx")
 
 colnames(poids) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435",
                             "Confoux - 430", "Confoux - 404", "Confoux - 405",

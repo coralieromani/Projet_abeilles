@@ -11,7 +11,7 @@ library(dplyr)
 library(tidyr)
 
 # Charger les données
-sica <- read_excel("../BD/Activity_Sica_2023.xlsx")
+sica <- read_excel("../../BD/Activity_Sica_2023.xlsx")
 
 # Transformer les données en format long
 sica_long <- sica %>%
@@ -73,7 +73,7 @@ library(dplyr)
 library(tidyr)
 
 # Charger les données
-sica <- read_excel("../BD/Activity_Sica_2023.xlsx")
+sica <- read_excel("../../BD/Activity_Sica_2023.xlsx")
 
 # Transformer les données en format long
 sica_long <- sica %>%
@@ -117,7 +117,7 @@ library(dplyr)
 library(tidyr)
 
 # Charger les données
-sica <- read_excel("../BD/Activity_Sica_2023.xlsx")
+sica <- read_excel("../../BD/Activity_Sica_2023.xlsx")
 
 # Transformer les données en format long
 sica_long <- sica %>%
@@ -175,7 +175,7 @@ library(dplyr)
 library(tidyr)
 
 # Charger les données
-sica <- read_excel("../BD/Activity_Sica_2023.xlsx")
+sica <- read_excel("../../BD/Activity_Sica_2023.xlsx")
 
 # Transformer les données en format long
 sica_long <- sica %>%
@@ -219,7 +219,7 @@ library(dplyr)
 library(tidyr)
 
 # Charger les données
-sica <- read_excel("../BD/Activity_Sica_2023.xlsx")
+sica <- read_excel("../../BD/Activity_Sica_2023.xlsx")
 
 # Transformer les données en format long
 sica_long <- sica %>%
@@ -287,7 +287,7 @@ library(tidyr)
 library(segmented)
 
 # Charger les données
-sica <- read_excel("../BD/Activity_Sica_2023.xlsx")
+sica <- read_excel("../../BD/Activity_Sica_2023.xlsx")
 
 # Transformer les données en format long
 sica_long <- sica %>%
@@ -373,7 +373,7 @@ library(tidyr)
 library(segmented)
 
 # Charger les données
-sica <- read_excel("../BD/Activity_Sica_2023.xlsx")
+sica <- read_excel("../../BD/Activity_Sica_2023.xlsx")
 
 # Transformer les données en format long
 sica_long <- sica %>%
