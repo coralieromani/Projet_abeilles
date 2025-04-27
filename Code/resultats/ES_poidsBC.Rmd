@@ -8,9 +8,9 @@ library(purrr)
 
 
 ```{r}
-breakpoints_table = readRDS("breakpoints_table.rds")
-sica_diff = readRDS("sica_diff.rds")
-poids_moyen = readRDS("poids_moyen.rds")
+breakpoints_table = readRDS("tables/breakpoints_table.rds")
+sica_diff = readRDS("tables/sica_diff.rds")
+poids_moyen = readRDS("tables/poids_moyen.rds")
 ```
 
 ## POIDS MOYEN DU 10/04/2023
