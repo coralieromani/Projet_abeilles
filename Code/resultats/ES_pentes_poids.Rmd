@@ -3,13 +3,17 @@ library(readxl)
 library(segmented)
 library(dplyr)
 library(ggplot2)
-library(purrr)
+library(tidyr)
+library(gridExtra)
+library(lubridate)
+library(fuzzyjoin)
 ```
 
 
 ```{r}
-breakpoints_table = readRDS("tables/breakpoints_table.rds")
-sica_diff = readRDS("tables/sica_diff.rds")
+getwd()
+breakpoints_table <- readRDS("../../tables/breakpoints_table.rds")
+sica_diff = readRDS("../../tables/sica_diff.rds")
 ```
 
 # Différences des entrées/sorties entre le BP1 et le BP2 en fonction de la pente du BC entre ces 2 BP

@@ -7,7 +7,8 @@ library(gridExtra)
 library(lubridate)
 library(fuzzyjoin)
 
-breakpoints_table <- readRDS("breakpoints_table.rds")
+breakpoints_table <- readRDS("tables/breakpoints_table.rds")
+sica_diff <- readRDS("tables/sica_diff.rds")
 
 # Représentation de toutes les pentes des BC
 
