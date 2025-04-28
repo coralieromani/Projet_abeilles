@@ -51,7 +51,7 @@ ggplot(poids_moyen2, aes(x = date, y = poids)) +
 
 
 #entrées/sorties et poids pour le 10 avril 2023
-```{r, echo='FALSE', warning=FALSE}
+```{r, echo=FALSE, warning=FALSE}
 library(readxl)
 library(ggplot2)
 library(dplyr)
@@ -136,6 +136,10 @@ poids_moyen1$prediction <- predict(modele_segmente, newdata = data.frame(date_nu
 min_poids <- min(poids_moyen1$poids, na.rm = TRUE)
 max_poids <- max(poids_moyen1$poids, na.rm = TRUE)
 
+# Calculer la plage cible du graphe principal (y principal)
+max_diff <- max(abs(poids_moyen1$prediction), na.rm = TRUE)
+
+# Choisir un facteur d’échelle basé sur les plages
 scale_factor <- max(sica_entrees$prediction, sica_sorties$prediction, na.rm = TRUE) / 
                 (max_poids - min_poids)
 
@@ -147,16 +151,16 @@ graphique_global <- ggplot() +
   
   # Poids moyen : mise à l’échelle fictive pour superposition
   geom_line(data = poids_moyen1, aes(x = date, 
-                                    y = (poids - min_poids) * scale_factor,
+                                    y = (prediction - min_poids) * scale_factor - max_diff,
                                     color = factor("Poids moyen")), size = 1) +
   
   # Double axe y
   scale_y_continuous(
     name = "Entrées / Sorties",
     sec.axis = sec_axis(
-      trans = ~ . / scale_factor + min_poids,
+      trans = ~ (. + max_diff) / scale_factor + min_poids,
       name = "Poids moyen (en g)",
-      breaks = seq(floor(min_poids), ceiling(max_poids))
+      breaks = seq(floor(min_poids), ceiling(max_poids), by = 0.5)
     )
   ) +
   
@@ -171,6 +175,7 @@ graphique_global <- ggplot() +
   theme_minimal()
 
 print(graphique_global)
+
 ```
 
 
@@ -351,9 +356,12 @@ poids_moyen2$prediction <- predict(modele_segmente, newdata = data.frame(date_nu
 min_poids <- min(poids_moyen2$poids, na.rm = TRUE)
 max_poids <- max(poids_moyen2$poids, na.rm = TRUE)
 
+# Calculer la plage cible du graphe principal (y principal)
+max_diff <- max(abs(poids_moyen2$prediction), na.rm = TRUE)
+
+# Choisir un facteur d’échelle basé sur les plages
 scale_factor <- max(sica_entrees$prediction, sica_sorties$prediction, na.rm = TRUE) / 
                 (max_poids - min_poids)
-
 graphique_global <- ggplot() +
   
   # Entrées et sorties
@@ -362,7 +370,7 @@ graphique_global <- ggplot() +
   
   # Poids moyen : mise à l’échelle fictive pour superposition
   geom_line(data = poids_moyen2, aes(x = date, 
-                                    y = (poids - min_poids) * scale_factor,
+                                    y = (prediction - min_poids) * scale_factor,
                                     color = factor("Poids moyen")), size = 1) +
   
   # Double axe y
@@ -371,7 +379,7 @@ graphique_global <- ggplot() +
     sec.axis = sec_axis(
       trans = ~ . / scale_factor + min_poids,
       name = "Poids moyen (en g)",
-      breaks = seq(floor(min_poids), ceiling(max_poids))
+      breaks = seq(floor(min_poids), ceiling(max_poids), by = 0.2)
     )
   ) +
   
@@ -386,6 +394,7 @@ graphique_global <- ggplot() +
   theme_minimal()
 
 print(graphique_global)
+
 ```
 
 
