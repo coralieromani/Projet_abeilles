@@ -101,23 +101,6 @@ ggplot() +
   ) +
   theme_minimal()
 
-
-# Différences entrées sorties sur une journée, avec représentation de de l'intervalle de temps du BC
-
-ggplot(breakpoints_table, aes(x = pente_ES, y = variation_poids)) +
-  geom_point() +
-  theme_minimal()
-
-breakpoints_table_ext <- breakpoints_table %>%
-  filter(
-    between(pente_ES, -3, 5),
-    between(variation_poids, -2.5, 1)
-  )
-
-ggplot(breakpoints_table_ext, aes(x = pente_ES, y = variation_poids)) +
-  geom_point() +
-  theme_minimal()
-
 # Filtrer pour la date du 10 avril 2023
 sica_10avril <- sica_diff %>% filter(as.Date(date) %in% as.Date(c("2023-04-10")))
 
@@ -128,12 +111,14 @@ bp2_10avril = tibble(x=c(bp_10avril$heure_BP_1,bp_10avril$heure_BP_2),y=c(bp_10a
 diff_modele <- lm(diff_ES ~ heure, data = sica_10avril)
 
 ggplot(sica_10avril, aes(x = heure)) +
+  geom_ribbon(data = sica_13oct %>% filter(heure >= bp_10avril$heure_BP_1 & heure <= bp_10avril$heure_BP_2),
+              aes(ymin = -Inf, ymax = Inf), fill = "red", alpha = 0.2) +
   geom_line(aes(y = diff_ES), color = "skyblue") +
   geom_point(data=bp2_10avril, aes(x=x,y=0), color='red', size=1.9) +
   geom_line(data=bp2_10avril, aes(x=x,y=0), color='red', size=1) +
   labs(
     x = "Heure",
-    y = "Différence"
+    y = "Différence des Entrées/Sorties"
   ) +
   scale_x_continuous(
     limits = c(0, 1440),  # Plage de 0 à 1440 minutes
@@ -152,16 +137,16 @@ bp2_13oct = tibble(x=c(bp_13oct$heure_BP_1,bp_13oct$heure_BP_2),y=c(bp_13oct$dif
 diff_modele <- lm(diff_ES ~ heure, data = sica_13oct)
 
 ggplot(sica_13oct, aes(x = heure)) +
+  # Transparence
+  geom_ribbon(data = sica_13oct %>% filter(heure >= bp_13oct$heure_BP_1 & heure <= bp_13oct$heure_BP_2),
+              aes(ymin = -Inf, ymax = Inf), fill = "red", alpha = 0.2) +
   geom_line(aes(y = diff_ES), color = "skyblue") +
-  geom_point(data=bp2_13oct, aes(x=x,y=0), color='red', size=1.9) +
-  geom_line(data=bp2_13oct, aes(x=x,y=0), color='red', size=1) +
-  labs(
-    x = "Heure",
-    y = "Différence"
-  ) + 
+  geom_point(data = bp2_13oct, aes(x = x, y = 0), color = 'red', size = 1.9) +
+  geom_line(data = bp2_13oct, aes(x = x, y = 0), color = 'red', size = 1) +
+  labs(x = "Heure", y = "Différence des Entrées/Sorties") +
   scale_x_continuous(
     limits = c(0, 1440),  # Plage de 0 à 1440 minutes
     breaks = seq(0, 1440, by = 360), 
-    labels = function(x) format(as.POSIXct(x * 60, origin = "1970-01-01", tz = "UTC"), "%H:%M")  # Format HH:MM
+    labels = function(x) format(as.POSIXct(x * 60, origin = "1970-01-01", tz = "UTC"), "%H:%M")
   ) +
   theme_minimal()

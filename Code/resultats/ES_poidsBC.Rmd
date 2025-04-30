@@ -4,6 +4,7 @@ library(segmented)
 library(dplyr)
 library(ggplot2)
 library(purrr)
+library(tidyr)
 ```
 
 
@@ -23,8 +24,12 @@ poids_moyen <- poids_moyen %>%
   )
 poids_moyen <- poids_moyen %>% mutate (diff_ES = Entrées - Sorties) %>% drop_na(Entrées, Sorties)
 
+BP_1 = breakpoints_table$heure_BP_1[breakpoints_table$date == "2023-04-10"]
+BP_2 = breakpoints_table$heure_BP_2[breakpoints_table$date == "2023-04-10"]
 
 poids_moyen_10avril = poids_moyen %>% filter(date == "2023-04-10")
+
+poids_moyen_10avril = poids_moyen_10avril %>% filter(heure > 457 & heure < 744)
 ```
 
 # Entrées

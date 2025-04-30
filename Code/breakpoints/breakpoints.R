@@ -166,6 +166,24 @@ breakpoints_table <- breakpoints_table %>%
 breakpoints_table <- breakpoints_table %>%
   mutate(pente_ES = (diff_ES_BP_2 - diff_ES_BP_1) / (heure_BP_2 - heure_BP_1))
 
+# Ajouter les sommes cumulées et les moyennes
+somme_diff_ES <- numeric(nrow(breakpoints_table))
+moyenne_diff_ES <- numeric(nrow(breakpoints_table))
+
+for (i in seq_len(nrow(breakpoints_table))) {
+  date_i <- breakpoints_table$date[i]
+  BP1 <- breakpoints_table$heure_BP_1[i]
+  BP2 <- breakpoints_table$heure_BP_2[i]
+  
+  ES_jour <- sica_diff %>% filter(date == date_i, heure >= BP1, heure <= BP2)
+  
+  somme_diff_ES[i] <- sum(ES_jour$diff_ES, na.rm = TRUE)
+  moyenne_diff_ES[i] <- mean(ES_jour$diff_ES, na.rm = TRUE)
+}
+
+breakpoints_table$somme_diff_ES <- somme_diff_ES
+breakpoints_table$moyenne_diff_ES <- moyenne_diff_ES
+
 # Sauvegarde
 saveRDS(breakpoints_table, "breakpoints_table.rds")
 saveRDS(poids_moyen, "poids_moyen.rds")
