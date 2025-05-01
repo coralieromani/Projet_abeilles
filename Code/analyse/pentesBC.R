@@ -101,6 +101,12 @@ ggplot() +
   ) +
   theme_minimal()
 
+breakpoints_table_ext <- breakpoints_table %>%
+  filter(
+    between(pente_ES, -3, 5),
+    between(variation_poids, -2.5, 1)
+  )
+
 # Filtrer pour la date du 10 avril 2023
 sica_10avril <- sica_diff %>% filter(as.Date(date) %in% as.Date(c("2023-04-10")))
 

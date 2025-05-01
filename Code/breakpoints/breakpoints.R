@@ -185,6 +185,6 @@ breakpoints_table$somme_diff_ES <- somme_diff_ES
 breakpoints_table$moyenne_diff_ES <- moyenne_diff_ES
 
 # Sauvegarde
-saveRDS(breakpoints_table, "breakpoints_table.rds")
-saveRDS(poids_moyen, "poids_moyen.rds")
-saveRDS(sica_diff,"sica_diff.rds")
+saveRDS(breakpoints_table, "tables/breakpoints_table.rds")
+saveRDS(poids_moyen, "tables/poids_moyen.rds")
+saveRDS(sica_diff,"tables/sica_diff.rds")

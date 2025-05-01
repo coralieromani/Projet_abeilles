@@ -25,7 +25,6 @@ ggplot(breakpoints_table, aes(x = variation_poids, y = somme_diff_ES)) + geom_po
 # Moyenne des différences entrées/sorties entre le BP1 et le BP2 en fonction de la pente du BC entre ces 2 BP
 ```{r}
 ggplot(breakpoints_table, aes(x = variation_poids, y = moyenne_diff_ES)) + geom_point(colour ="skyblue") + geom_smooth(method="lm", se=FALSE) +
-  scale_x_continuous(limits = c(-0.75, 0.05)) +
   labs(y = "Moyenne des différences Entrées/Sorties", x = "Pente du Breakfast Canyon") + theme_minimal()
 ```
 
