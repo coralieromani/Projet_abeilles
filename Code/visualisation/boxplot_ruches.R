@@ -11,16 +11,13 @@ colnames(poids_ruches) <- c("date", "412 ", "409", "435",
                             "415", "428", "444",
                             "412", "Y", "89")
 
-poids_sansdate <- poids_ruches %>%
-  select(-1)
+poids_sansdate <- poids_ruches[2:13]
 
 #Suppression de la colonne Date et des rûches de Confoux
-poids_sica_sansdate <- poids_sansdate %>%
-  select((ncol(poids_sansdate)-5):ncol(poids_sansdate))
+poids_sica_sansdate <- poids_sansdate[7:12]
 
 #Suppression de la colonne Date et des rûches de Sica
-poids_confoux_sansdate <- poids_sansdate %>%
-  select(1:6)
+poids_confoux_sansdate <- poids_sansdate[1:6]
 
 # Transformer les données en format long
 
@@ -35,11 +32,11 @@ poids_long_sica <- poids_sica_sansdate%>%
 #Tracé des boxplot
 ggplot(poids_long_confoux, aes(x = ruche, y = poids)) +
   geom_boxplot(fill = "pink", color = "purple") +
-  labs(y = "Poids", x ="Rûches")
+  labs(y = "Poids", x ="Ruches")
 
 ggplot(poids_long_sica, aes(x = ruche, y = poids)) +
   geom_boxplot(fill = "pink", color = "purple") +
-  labs(y = "Poids", x = "Rûches")
+  labs(y = "Poids", x = "Ruches")
 
 # mauve = médiane
 # moustache = étendue des données en dehors des quantiles

@@ -92,12 +92,12 @@ ggplot() +
   scale_color_viridis_d() +
   guides(color = "none") +
   scale_x_discrete(
-    name = "Heure de la journée",
+    name = "Heure",
     breaks = c("04:00", "06:00", "08:00", "10:00", "12:00", "14:00", "16:00", "18:00")
   ) +
   labs(
-    title = "Pentes entre BP1 et BP2 (Breakfast Canyon)",
-    y = "Variation de poids (g, centrée à 0)"
+    #title = "Pentes entre BP1 et BP2 (Breakfast Canyon)",
+    y = "Variation de poids (en g, centrée à 0)"
   ) +
   theme_minimal()
 
@@ -118,7 +118,7 @@ diff_modele <- lm(diff_ES ~ heure, data = sica_10avril)
 
 ggplot(sica_10avril, aes(x = heure)) +
   geom_ribbon(data = sica_13oct %>% filter(heure >= bp_10avril$heure_BP_1 & heure <= bp_10avril$heure_BP_2),
-              aes(ymin = -Inf, ymax = Inf), fill = "red", alpha = 0.2) +
+              aes(ymin = -Inf, ymax = Inf), fill = "red", alpha = 0.1) +
   geom_line(aes(y = diff_ES), color = "skyblue") +
   geom_point(data=bp2_10avril, aes(x=x,y=0), color='red', size=1.9) +
   geom_line(data=bp2_10avril, aes(x=x,y=0), color='red', size=1) +
@@ -145,7 +145,7 @@ diff_modele <- lm(diff_ES ~ heure, data = sica_13oct)
 ggplot(sica_13oct, aes(x = heure)) +
   # Transparence
   geom_ribbon(data = sica_13oct %>% filter(heure >= bp_13oct$heure_BP_1 & heure <= bp_13oct$heure_BP_2),
-              aes(ymin = -Inf, ymax = Inf), fill = "red", alpha = 0.2) +
+              aes(ymin = -Inf, ymax = Inf), fill = "red", alpha = 0.1) +
   geom_line(aes(y = diff_ES), color = "skyblue") +
   geom_point(data = bp2_13oct, aes(x = x, y = 0), color = 'red', size = 1.9) +
   geom_line(data = bp2_13oct, aes(x = x, y = 0), color = 'red', size = 1) +

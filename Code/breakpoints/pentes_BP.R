@@ -3,8 +3,8 @@ library(segmented)
 library(dplyr)
 library(ggplot2)
 
-breakpoints_table <- readRDS("breakpoints_table.rds")
-poids_moyen <- readRDS("poids_moyen.rds")
+breakpoints_table <- readRDS("tables/breakpoints_table.rds")
+poids_moyen <- readRDS("tables/poids_moyen.rds")
 
 test <- subset(poids_moyen, date == "2023-04-22")
 modele <- lm(poids ~ heure, data = test)
@@ -62,15 +62,13 @@ annot_x <- min_date + (max_date - min_date) * 0.7
 
 # Graphique
 ggplot(breakpoints_table, aes(x = date)) +
-  geom_point(aes(y = BP_1_numeric, color = "Breakpoint 1")) +
-  geom_point(aes(y = BP_2_numeric, color = "Breakpoint 2")) +
+  geom_point(aes(y = BP_1_numeric, color = "Breakpoint B")) +
+  geom_point(aes(y = BP_2_numeric, color = "Breakpoint C")) +
   geom_line(aes(y = BP_1_trend), color = "darkgreen", size = 1) +
   geom_line(aes(y = BP_2_trend), color = "#D5006D", size = 1) +
-  annotate("text", x = annot_x, y = 23.5, label = paste("R² BP1 =", R2_BP1), color = "darkgreen", hjust = 0) +
-  annotate("text", x = annot_x, y = 22.5, label = paste("R² BP2 =", R2_BP2), color = "#D5006D", hjust = 0) +
   labs(x = "Jour", y = "Heure") +
   scale_y_continuous(breaks = seq(0, 24, by = 1), limits = c(0, 24)) +
-  scale_color_manual(values = c("Breakpoint 1" = "green", "Breakpoint 2" = "pink"), name = "Breakpoints") +
+  scale_color_manual(values = c("Breakpoint B" = "green", "Breakpoint C" = "pink"), name = "Breakpoints") +
   theme_minimal()
 
 ggplot(breakpoints_table, aes(x = date, y = variation_poids)) +
@@ -82,33 +80,20 @@ ggplot(breakpoints_table, aes(x = date, y = variation_poids)) +
   theme_minimal()
 
 breakpoints_table_filtre <- breakpoints_table %>%
-  filter(!date %in% as.Date(c("2023-05-10", "2023-09-18","2023-10-26")))
+  filter(!date %in% as.Date(c("2023-06-05","2023-04-28","2023-09-18")))
 
 modele_pente <- lm(variation_poids ~ as.numeric(date), data = breakpoints_table_filtre)
 
 # Résumé du modèle pour extraire le R²
 R2_pente = summary(modele_pente)$r.squared
 
-#REMARQUES: variations étonnantes pour certaine journées
-#le 10/05/2023 : -2,46g  (1h01 et 3g environ)
-#le 18/09/2023 : -7,46g (ici on a une grande différence de poids entre les 2 BP : 1h07 pour 8,5g)
-#le 26/10/2023 : + 2,87g (1h24 et 3,3g environ)
-
-# test2 <- subset(poids_moyen, date == "2023-09-18")
-# modele <- lm(poids ~ heure, data = test)
-# modele_seg <- segmented(modele, seg.Z = ~heure, npsi = 2)
-# plot(test$heure, test$poids, type = "b", main = paste("Régression segmentée le 18/09/2023"), xlab = "Heure", ylab = "Poids")
-# lines(test$heure, predict(modele_seg), col = "red", lwd = 2)
-
-#enlever les 3 valeurs extrêmes et refaire le graphe + rajouter la RL:
-
 ggplot(breakpoints_table_filtre, aes(x = date, y = variation_poids)) +
   geom_point(color = "blue", size = 1) +
   geom_smooth(method = "lm", color = "red", se = FALSE) +
   labs(x = "Jour", y = "Pente en gramme par heure") +
-  scale_y_continuous(breaks = c(0,seq(from = min(breakpoints_table_filtre$variation_poids),
-                                      to = max(breakpoints_table_filtre$variation_poids),
-                                      by = 1))) +
+  scale_y_continuous(limits = c(-0.7, 0),
+                     breaks = seq(-0.7, 0, by = 0.1)
+  ) +
   theme_minimal()
 
 
