@@ -11,20 +11,62 @@ library(fuzzyjoin)
 
 
 ```{r}
-getwd()
+Sys.setlocale("LC_TIME", "fr_FR.UTF-8")
 breakpoints_table <- readRDS("../../tables/breakpoints_table.rds")
+breakpoints_table$mois <- format(breakpoints_table$date, "%B")
+breakpoints_table$mois <- factor(breakpoints_table$mois, 
+                                 levels = format(ISOdate(2000, 1:12, 1), "%B"))
 sica_diff = readRDS("../../tables/sica_diff.rds")
 ```
-# Somme cumulé des différences entrées/sorties entre le BP1 et le BP2 en fonction de la pente du BC entre ces 2 BP
+# Somme cumulée des différences entrées/sorties entre le BP1 et le BP2 en fonction de la pente du BC entre ces 2 BP
 ```{r}
-ggplot(breakpoints_table, aes(x = variation_poids, y = somme_diff_ES)) + geom_point(colour ="skyblue") + geom_smooth(method="lm", se=FALSE) +
-  scale_x_continuous(limits = c(-0.75, 0.05)) +
-  labs(y = "Somme cumulé des différences Entrées/Sorties", x = "Pente du Breakfast Canyon") + theme_minimal()
+ggplot(breakpoints_table, aes(x = variation_poids, y = somme_diff_ES, colour = factor(mois))) + geom_point() + labs(y = "Somme cumulée des différences Entrées/Sorties", x = "Pente du Breakfast Canyon") + theme_minimal()
+```
+# Somme cumulée des différences entrées/sorties entre le BP1 et le BP2 en fonction de la pente du BC entre ces 2 BP (sans valeurs extrêmes)
+```{r}
+vec2_R2 <- data.frame(
+  mois = integer(),
+  R2 = numeric()
+)
+
+for (i in sort(unique(breakpoints_table$mois))) {
+  data_mois <- subset(breakpoints_table, mois == i)
+  breakpoints_table = breakpoints_table %>% filter(variation_poids>-0.35)
+  modele <- lm(somme_diff_ES ~ variation_poids, data = data_mois)
+  
+  R2 <- round(summary(modele)$r.squared, 4)
+  
+  # Ajouter au tableau
+  vec2_R2 <- rbind(vec2_R2, data.frame(mois = i, R2 = R2))
+}
+
+ggplot(breakpoints_table, aes(x = variation_poids, y = somme_diff_ES, colour = factor(mois))) + geom_point()  + scale_x_continuous(limits = c(-0.35, 0.05)) + geom_smooth(method="lm", se =FALSE) +
+  labs(y = "Somme cumulée des différences Entrées/Sorties", x = "Pente du Breakfast Canyon") + theme_minimal()
 ```
 
 # Moyenne des différences entrées/sorties entre le BP1 et le BP2 en fonction de la pente du BC entre ces 2 BP
 ```{r}
-ggplot(breakpoints_table, aes(x = variation_poids, y = moyenne_diff_ES)) + geom_point(colour ="skyblue") + geom_smooth(method="lm", se=FALSE) +
+ggplot(breakpoints_table, aes(x = variation_poids, y = moyenne_diff_ES, colour = factor(mois))) + geom_point() + labs(y = "Moyenne des différences Entrées/Sorties", x = "Pente du Breakfast Canyon") + theme_minimal()
+```
+# Moyenne des différences entrées/sorties entre le BP1 et le BP2 en fonction de la pente du BC entre ces 2 BP
+```{r}
+vec_R2 <- data.frame(
+  mois = integer(),
+  R2 = numeric()
+)
+
+for (i in sort(unique(breakpoints_table$mois))) {
+  data_mois <- subset(breakpoints_table, mois == i)
+  breakpoints_table = breakpoints_table %>% filter(variation_poids>-0.35)
+  modele <- lm(moyenne_diff_ES ~ variation_poids, data = data_mois)
+  
+  R2 <- round(summary(modele)$r.squared, 4)
+  
+  # Ajouter au tableau
+  vec_R2 <- rbind(vec_R2, data.frame(mois = i, R2 = R2))
+}
+
+ggplot(breakpoints_table, aes(x = variation_poids, y = moyenne_diff_ES, colour = factor(mois))) + geom_point() + scale_x_continuous(limits = c(-0.35, 0.05)) + geom_smooth(method="lm", se =FALSE) +
   labs(y = "Moyenne des différences Entrées/Sorties", x = "Pente du Breakfast Canyon") + theme_minimal()
 ```
 
