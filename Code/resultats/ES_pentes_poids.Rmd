@@ -93,16 +93,23 @@ ggplot(breakpoints_table_entree, aes(x = variation_poids, y = entree_BP2_1)) + g
 
 # Différences des entrées/sorties entre le BP1 et le BP2 en fonction de la pente du BC entre ces 2 BP (sans valeurs extrêmes)
 ```{r}
+modele2 <- lm(entree_BP2_1 ~ variation_poids, data =breakpoints_table_entree)
+  
+R2_entree <- round(summary(modele2)$r.squared, 4)
+
 ggplot(breakpoints_table_entree, aes(x = variation_poids, y = entree_BP2_1)) + geom_point(colour ="skyblue") + geom_smooth(method="lm", se=FALSE) +
-  scale_x_continuous(limits = c(-0.75, 0.05)) +
+  scale_x_continuous(limits = c(-0.35, 0.05)) +
   labs(y = "Différences des entrées entre les deux Breakpoints", x = "Pente du Breakfast Canyon") + theme_minimal()
 ```
 
-# Différences des pentes entrées/sorties entre le BP1 et le BP2 en fonction de la pente du BC entre ces 2 BP (sans valeurs extrêmes)
+# Différences des pentes entrées entre le BP1 et le BP2 en fonction de la pente du BC entre ces 2 BP (sans valeurs extrêmes)
 ```{r}
+modele3 <- lm(pente_entree ~ variation_poids, data =breakpoints_table_entree)
+  
+R2_pente_entree <- round(summary(modele3)$r.squared, 4)
 
 ggplot(breakpoints_table_entree, aes(x = variation_poids, y = pente_entree)) + geom_point(colour ="skyblue") + geom_smooth(method="lm", se=FALSE) +
-  scale_x_continuous(limits = c(-0.75, 0.05)) +
+  scale_x_continuous(limits = c(-0.35, 0.05)) +
   labs(y = "Pente des entrées entre les deux Breakpoints", x = "Pente du Breakfast Canyon") + theme_minimal()
 ```
 
@@ -129,14 +136,22 @@ ggplot(breakpoints_table_sortie, aes(x = variation_poids, y = sortie_BP2_1)) + g
 
 # Différences des entrées/sorties entre le BP1 et le BP2 en fonction de la pente du BC entre ces 2 BP (sans valeurs extrêmes)
 ```{r}
+modele4 <- lm(sortie_BP2_1 ~ variation_poids, data =breakpoints_table_sortie)
+  
+R2_sortie <- round(summary(modele4)$r.squared, 4)
+
 ggplot(breakpoints_table_sortie, aes(x = variation_poids, y = sortie_BP2_1)) + geom_point(colour ="skyblue") + geom_smooth(method="lm", se=FALSE) +
-  scale_x_continuous(limits = c(-0.75, 0.05)) +
+  scale_x_continuous(limits = c(-0.35, 0.05)) +
   labs(y = "Différences des sorties entre les deux Breakpoints", x = "Pente du Breakfast Canyon") + theme_minimal()
 ```
 
 # Différences des pentes entrées/sorties entre le BP1 et le BP2 en fonction de la pente du BC entre ces 2 BP (sans valeurs extrêmes)
 ```{r}
+modele5 <- lm(pente_sortie ~ variation_poids, data =breakpoints_table_sortie)
+  
+R2_pente_sortie <- round(summary(modele5)$r.squared, 4)
+
 ggplot(breakpoints_table_sortie, aes(x = variation_poids, y = pente_sortie)) + geom_point(colour ="skyblue") + geom_smooth(method="lm", se=FALSE) +
-  scale_x_continuous(limits = c(-0.75, 0.05)) +
+  scale_x_continuous(limits = c(-0.35, 0.05)) +
   labs(y = "Pente des sorties entre les deux Breakpoints", x = "Pente du Breakfast Canyon") + theme_minimal()
 ```

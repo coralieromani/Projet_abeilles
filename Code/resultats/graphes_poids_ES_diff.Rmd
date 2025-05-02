@@ -37,49 +37,47 @@ sica_long <- sica %>%
   pivot_longer(cols = -date, names_to = "type", values_to = "valeur") %>%
   mutate(
     ruche = sub("CPT_|-entrées|-sorties", "", type),
-    mouvement = ifelse(grepl("entrées", type), "Entrées", "Sorties"),
+    activite = ifelse(grepl("entrées", type), "Entrées", "Sorties"),
     heure = as.numeric(format(date, "%H"))
   ) %>%
   filter(as.Date(date) == as.Date("2023-04-10"))
 
 sica_moyenne <- sica_long %>%
-  group_by(heure, mouvement) %>%
+  group_by(heure, activite) %>%
   summarise(moyenne_valeur = mean(valeur, na.rm = TRUE), .groups = "drop")
 
 ## moyennes faites sur toutes les ruches et sur l'heure entière à chaque fois
 
 # Calcul de la différence (entrées - sorties)
 sica_diff <- sica_moyenne %>%
-  pivot_wider(names_from = mouvement, values_from = moyenne_valeur) %>%
+  pivot_wider(names_from = activite, values_from = moyenne_valeur) %>%
   mutate(diff = Entrées - Sorties)
 
 # Graphique 1 : Poids moyen
 graph_poids <- ggplot(poids_moyens, aes(x = heure, y = poids)) +
   geom_point(color = "steelblue", size = 2) +
-  labs(x = NULL, y = "Poids (kg)") +
+  labs(x = NULL, y = "Poids (g)") +
   theme_minimal() +
   theme(axis.text.x = element_blank(),
         axis.title.x = element_blank())
 
 # Graphique 2 : Activité entrées/sorties
-graph_entrees_sorties <- ggplot(sica_moyenne, aes(x = heure, y = moyenne_valeur, color = mouvement)) +
+graph_entrees_sorties <- ggplot(sica_moyenne, aes(x = heure, y = moyenne_valeur, color = activite)) +
   geom_point(size = 2) +
   scale_color_manual(values = c("Entrées" = "purple", "Sorties" = "pink")) +
-  labs(x = NULL, y = "Activité", color = "Mouvement") +
+  labs(x = NULL, y = "Activité", color = "Activité") +
   theme_minimal() +
   theme(axis.text.x = element_blank(),
         axis.title.x = element_blank())
 
 # Graphique 3 : Différences entrées - sorties
-graph_diff <- ggplot(sica_diff, aes(x = heure, y = diff, color = "Différence")) +
-  geom_point(size = 2) +
-  scale_color_manual(values = c("Différence" = "orange")) +
-  labs(x = "Heure", y = "Entrées - Sorties", color = "") +
+graph_diff <- ggplot(sica_diff, aes(x = heure, y = diff)) +
+  geom_point(color = "orange", size = 2) +
+  labs(x = "Heure", y = "Différence", color = "") +
   theme_minimal()
 
 # Affichage combiné
-(graph_poids / graph_entrees_sorties / graph_diff) + plot_layout(guides = "collect") & theme(legend.position = "bottom")
-
+(graph_poids / graph_entrees_sorties / graph_diff) + plot_layout(guides = "collect")
 ```
 # graphiques combinés: poids, entrées, sorties, différence en fonction de l'heure de la journée pour le 13/10/23
 
@@ -142,21 +140,19 @@ graph_poids <- ggplot(poids_moyens, aes(x = heure, y = poids)) +
 graph_entrees_sorties <- ggplot(sica_moyenne, aes(x = heure, y = moyenne_valeur, color = mouvement)) +
   geom_point(size = 2) +
   scale_color_manual(values = c("Entrées" = "purple", "Sorties" = "pink")) +
-  labs(x = NULL, y = "Activité", color = "Mouvement") +
+  labs(x = NULL, y = "Activité", color = "Activité") +
   theme_minimal() +
   theme(axis.text.x = element_blank(),
         axis.title.x = element_blank())
 
 # Graphique 3 : Différences entrées - sorties
-graph_diff <- ggplot(sica_diff, aes(x = heure, y = diff, color = "Différence")) +
-  geom_point(size = 2) +
-  scale_color_manual(values = c("Différence" = "orange")) +
+graph_diff <- ggplot(sica_diff, aes(x = heure, y = diff)) +
+  geom_point(color = "orange", size = 2) +
   labs(x = "Heure", y = "Entrées - Sorties", color = "") +
   theme_minimal()
 
 # Affichage combiné
-(graph_poids / graph_entrees_sorties / graph_diff) + plot_layout(guides = "collect") & theme(legend.position = "bottom")
-
+(graph_poids / graph_entrees_sorties / graph_diff) + plot_layout(guides = "collect")
 ```
 
 # graphiques combinés: poids, entrées, sorties, différence en fonction de l'heure de la journée (moyenne sur toutes les données)
@@ -217,21 +213,19 @@ graph_poids <- ggplot(poids_moyens, aes(x = heure, y = poids)) +
 graph_entrees_sorties <- ggplot(sica_moyenne, aes(x = heure, y = moyenne_valeur, color = mouvement)) +
   geom_point(size = 2) +
   scale_color_manual(values = c("Entrées" = "purple", "Sorties" = "pink")) +
-  labs(x = NULL, y = "Activité", color = "Mouvement") +
+  labs(x = NULL, y = "Activité", color = "Activité") +
   theme_minimal() +
   theme(axis.text.x = element_blank(),
         axis.title.x = element_blank())
 
 # Graphique 3 : Différences entrées - sorties
 graph_diff <- ggplot(sica_diff, aes(x = heure, y = diff, color = "Différence")) +
-  geom_point(size = 2) +
-  scale_color_manual(values = c("Différence" = "orange")) +
+  geom_point(color = "orange", size = 2) +
   labs(x = "Heure", y = "Entrées - Sorties", color = "") +
   theme_minimal()
 
 # Affichage combiné
-(graph_poids / graph_entrees_sorties / graph_diff) + plot_layout(guides = "collect") & theme(legend.position = "bottom")
-
+(graph_poids / graph_entrees_sorties / graph_diff) + plot_layout(guides = "collect")
 ```
 
 
