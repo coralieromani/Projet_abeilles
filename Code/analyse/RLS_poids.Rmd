@@ -55,7 +55,7 @@ for (ruche in noms_ruches) {
 ```
 
 
-# RL segmentée du poids moyen des 6 rûches de Sica sur 1 journée type
+# RL segmentée du poids moyen des 6 rûches de Sica sur 1 journée type : 10 avril 2023
 
 ```{r, echo=FALSE, warning=FALSE}
 library(readxl)
@@ -74,7 +74,7 @@ colnames(poids) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435",
 poids_sica <- poids[, c(1, 8:13)]
 
 # Extraire les données pour la rûche
-poids_restreint2 <- subset(poids_sica, date <= "2023-04-06 01:00:00" & date >= "2023-04-05 02:00:00")
+poids_restreint2 <- subset(poids_sica, date <= "2023-04-11 01:00:00" & date >= "2023-04-10 02:00:00")
 
 poids_moyen <- data.frame(date = poids_restreint2$date, poids = rowMeans(poids_restreint2[,-1])) 
 
@@ -131,82 +131,92 @@ ggplot(poids_moyen, aes(x = date, y = poids)) +
              aes(x = date, y = poids), color = "red", size = 3) +
   scale_x_datetime(
   labels = scales::date_format("%H:%M"),
-  limits = c(as.POSIXct("2023-04-05 00:00:00"),
-             as.POSIXct("2023-04-06 01:00:00"))
+  limits = c(as.POSIXct("2023-04-10 00:00:00"),
+             as.POSIXct("2023-04-11 01:00:00"))
 ) +
   theme_minimal()
 
 ```
 
-
-# RL segmentée sur le poids moyen de la rûche 89 Sica sur les 04/05 juin 2023
+# RL segmentée du poids moyen des 6 rûches de Sica sur 1 journée type : 13 octobre 2023
 
 ```{r, echo=FALSE, warning=FALSE}
 library(readxl)
 library(ggplot2)
 library(segmented)
+library(gridExtra)
 
-# Poids de la rûche 412 pour le 04 et 05 juin 2023
-poids_restreint3 <- poids[as.Date(poids_sica$date) %in% as.Date(c("2023-06-04", "2023-06-05")) &
-                         format(poids_sica$date, "%M") == "00", 
-                         c("date", 'Sica - 89')]
+# Charger les données
+poids <- read_excel("../../BD/Weight_2023_Sica_Confoux.xlsx")
 
-# Renommer la colonne
-colnames(poids_restreint3)[2] <- "poids_ruche89"
+colnames(poids) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435",
+                            "Confoux - 430", "Confoux - 404", "Confoux - 405",
+                            "Sica - 415", "Sica - 428", "Sica - 444",
+                            "Sica - 412", "Sica - Y", "Sica - 89")
 
-# Convertir la date en format numérique pour l'utiliser dans la régression
-poids_restreint3$date_num <- as.numeric(poids_restreint3$date)
+poids_sica <- poids[, c(1, 8:13)]
 
-# Convertir la colonne date en format POSIXct pour extraire l'heure
-poids_restreint3$date <- as.POSIXct(poids_restreint3$date)
+# Extraire les données pour la rûche
+poids_restreint2 <- subset(poids_sica, date <= "2023-10-14 01:00:00" & date >= "2023-10-13 02:00:00")
 
-# Extraire l'heure de la date
-poids_restreint3$heure <- format(poids_restreint3$date, "%H:%M")
+poids_moyen <- data.frame(date = poids_restreint2$date, poids = rowMeans(poids_restreint2[,-1])) 
 
-# Calculer le poids moyen par heure en regroupant par heure
-poids_moyen_par_heure <- aggregate(poids_ruche89 ~ heure, data = poids_restreint3, FUN = mean)
+colnames(poids_restreint2)[2] <- "poids"
 
-# Renommer la colonne pour plus de clarté
-colnames(poids_moyen_par_heure)[2] <- "poids_moyen"
+poids_moyen$date_num <- as.numeric(poids_restreint2$date)
+modele <- lm(poids ~ date_num, data = poids_moyen)
 
-# Extraire l'heure avant les deux-points et convertir en numérique
-poids_moyen_par_heure$date_num2 <- as.numeric(sub(":[0-9]+", "", poids_moyen_par_heure$heure))
+modele_segmente <- segmented(modele, seg.Z = ~date_num, npsi = 4, silent = TRUE)
 
-# Ajuster un modèle linéaire simple
-modele <- lm(poids_moyen ~ date_num2, data = poids_moyen_par_heure)
+# Extraire les breakpoints (estimation)
+breakpoints <- modele_segmente$psi[, "Est."]
 
-# Ajuster le modèle linéaire segmenté (ajuster la rupture)
-modele_segmenté <- segmented(modele, seg.Z = ~date_num2, npsi = 3, silent=TRUE)
+# Convertir les breakpoints numériques en dates
+breakpoints_dates <- as.POSIXct(breakpoints)
 
-# Tracer le graphique avec la régression linéaire segmentée
-ggplot(poids_moyen_par_heure, aes(x = date_num2, y = poids_moyen)) +
-  geom_point()+
-  geom_line(aes(y = predict(modele_segmenté, newdata = poids_moyen_par_heure)), color = "blue") +
-  labs(x = "Heure", y = "Poids de la ruche") +
-  scale_x_continuous(labels = function(x) format(as.POSIXct(x * 3600, origin = "1970-01-01"), "%H:%M")) + # Conversion pour afficher l'heure
+# Début et fin des données (réels)
+start_date <- poids_moyen$date[1]
+end_date <- poids_moyen$date[nrow(poids_moyen)]
+start_p <- poids_moyen$poids[1]
+end_p <- poids_moyen$poids[nrow(poids_moyen)]
+
+# Poids prédit aux premiers et derniers breakpoints
+first_bp_p <- predict(modele_segmente, newdata = data.frame(date_num = breakpoints[1]))
+last_bp_p <- predict(modele_segmente, newdata = data.frame(date_num = breakpoints[length(breakpoints)]))
+
+# Dates converties
+first_bp_date <- breakpoints_dates[1]
+first_bp_date2 <- breakpoints_dates[4]
+
+last_bp_date <- breakpoints_dates[length(breakpoints)]
+
+# Tracer
+ggplot(poids_moyen, aes(x = date, y = poids)) +
+  geom_point() +
+  labs(x = "Heure", y = "Poids moyen") +
+
+  # Segment 1
+  geom_line(data = data.frame(date = c(end_date, first_bp_date),
+                              poids = c(end_p, first_bp_p)),
+            aes(x = date, y = poids), color = "blue", size = 1) +
+
+  # Segment 2
+  geom_line(data = data.frame(date = breakpoints_dates,
+                              poids = predict(modele_segmente, newdata = data.frame(date_num = breakpoints))),
+            aes(x = date, y = poids), color = "blue", size = 1) +
+# Segment 3
+  geom_line(data = data.frame(date = c(first_bp_date2 , start_date),
+                              poids = c(last_bp_p, start_p)),
+            aes(x = date, y = poids), color = "blue", size = 1) +
+  # Points rouges aux breakpoints
+  geom_point(data = data.frame(date = breakpoints_dates,
+                               poids = predict(modele_segmente, newdata = data.frame(date_num = breakpoints))),
+             aes(x = date, y = poids), color = "red", size = 3) +
+  scale_x_datetime(
+  labels = scales::date_format("%H:%M"),
+  limits = c(as.POSIXct("2023-10-13 00:00:00"),
+             as.POSIXct("2023-10-14 01:00:00"))
+) +
   theme_minimal()
 
-```
-
-# RL du 04 avril pour la ruche 89 du domaine Sica
-
-
-```{r}
-library(readxl)
-library(ggplot2)
-
-#poids de la rûche 89 sur la journée du 04 avril 2023 
-poids_restreint4 <- poids[as.Date(poids$date) == as.Date("2023-04-04"), 
-                         c("date", 'Sica - 89')]
-
-#Renommer le nom de la colonne car elle contient des caractères spéciaux qui complique la suite
-colnames(poids_restreint4)[2] <- "poids_ruche89"
-
-#Tracé du graphe 
-#(geom_point trace les points, geom_line relie les points, geom_smooth trace la droite de régression linéaire)
-ggplot(poids_restreint4, aes(x = date, y = poids_ruche89)) +
-  geom_point() +
-  geom_line() +
-  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "red") +
-  labs(x = "Heure", y = "Poids de la ruche")
 ```

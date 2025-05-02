@@ -6,10 +6,10 @@ library(readxl)
 # Charger les données
 poids_ruches <- read_excel("BD/Weight_2023_Sica_Confoux.xlsx")
 
-colnames(poids_ruches) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435",
-                            "Confoux - 430", "Confoux - 404", "Confoux - 405",
-                            "Sica - 415", "Sica - 428", "Sica - 444",
-                            "Sica - 412", "Sica - Y", "Sica - 89")
+colnames(poids_ruches) <- c("date", "412 ", "409", "435",
+                            "430", "404", "405",
+                            "415", "428", "444",
+                            "412", "Y", "89")
 
 poids_sansdate <- poids_ruches %>%
   select(-1)
