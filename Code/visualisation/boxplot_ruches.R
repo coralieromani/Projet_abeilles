@@ -32,11 +32,11 @@ poids_long_sica <- poids_sica_sansdate%>%
 #Tracé des boxplot
 ggplot(poids_long_confoux, aes(x = ruche, y = poids)) +
   geom_boxplot(fill = "pink", color = "purple") +
-  labs(y = "Poids", x ="Ruches")
+  labs(y = "Poids (en g)", x ="Ruches")
 
 ggplot(poids_long_sica, aes(x = ruche, y = poids)) +
   geom_boxplot(fill = "pink", color = "purple") +
-  labs(y = "Poids", x = "Ruches")
+  labs(y = "Poids (en g)", x = "Ruches")
 
 # mauve = médiane
 # moustache = étendue des données en dehors des quantiles

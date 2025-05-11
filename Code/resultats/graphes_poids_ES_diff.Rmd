@@ -56,7 +56,7 @@ sica_diff <- sica_moyenne %>%
 # Graphique 1 : Poids moyen
 graph_poids <- ggplot(poids_moyens, aes(x = heure, y = poids)) +
   geom_point(color = "steelblue", size = 2) +
-  labs(x = NULL, y = "Poids (g)") +
+  labs(x = NULL, y = "Poids (en g)") +
   theme_minimal() +
   theme(axis.text.x = element_blank(),
         axis.title.x = element_blank())
@@ -131,7 +131,7 @@ sica_diff <- sica_moyenne %>%
 # Graphique 1 : Poids moyen
 graph_poids <- ggplot(poids_moyens, aes(x = heure, y = poids)) +
   geom_point(color = "steelblue", size = 2) +
-  labs(x = NULL, y = "Poids (kg)") +
+  labs(x = NULL, y = "Poids (en g)") +
   theme_minimal() +
   theme(axis.text.x = element_blank(),
         axis.title.x = element_blank())
@@ -204,7 +204,7 @@ sica_diff <- sica_moyenne %>%
 # Graphique 1 : Poids moyen
 graph_poids <- ggplot(poids_moyens, aes(x = heure, y = poids)) +
   geom_point(color = "steelblue", size = 2) +
-  labs(x = NULL, y = "Poids (kg)") +
+  labs(x = NULL, y = "Poids (en g)") +
   theme_minimal() +
   theme(axis.text.x = element_blank(),
         axis.title.x = element_blank())

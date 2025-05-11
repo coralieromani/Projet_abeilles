@@ -95,5 +95,3 @@ ggplot(breakpoints_table_filtre, aes(x = date, y = variation_poids)) +
                      breaks = seq(-0.7, 0, by = 0.1)
   ) +
   theme_minimal()
-
-

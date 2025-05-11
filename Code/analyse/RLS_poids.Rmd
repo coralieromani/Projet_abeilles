@@ -46,7 +46,7 @@ for (ruche in noms_ruches) {
     geom_point() +
     geom_line(aes(y = predict(modele_segmente, newdata = poids_restreint)), color = "blue") +
     geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "red") +  # Régression linéaire globale
-    labs(x = "Heure", y = "Poids de la rûche") +
+    labs(x = "Heure", y = "Poids moyen (en g)") +
     theme_minimal()
   
     graphes_ruches[[ruche]] <- graphique
@@ -110,7 +110,7 @@ last_bp_date <- breakpoints_dates[length(breakpoints)]
 # Tracer
 ggplot(poids_moyen, aes(x = date, y = poids)) +
   geom_point() +
-  labs(x = "Heure", y = "Poids moyen") +
+  labs(x = "Heure", y = "Poids moyen (en g)") +
 
   # Segment 1
   geom_line(data = data.frame(date = c(end_date, first_bp_date),
@@ -193,7 +193,7 @@ last_bp_date <- breakpoints_dates[length(breakpoints)]
 # Tracer
 ggplot(poids_moyen, aes(x = date, y = poids)) +
   geom_point() +
-  labs(x = "Heure", y = "Poids moyen") +
+  labs(x = "Heure", y = "Poids moyen (en g)") +
 
   # Segment 1
   geom_line(data = data.frame(date = c(end_date, first_bp_date),
