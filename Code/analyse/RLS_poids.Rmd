@@ -105,8 +105,6 @@ last_bp_p <- predict(modele_segmente, newdata = data.frame(date_num = breakpoint
 first_bp_date <- breakpoints_dates[1]
 first_bp_date2 <- breakpoints_dates[4]
 
-last_bp_date <- breakpoints_dates[length(breakpoints)]
-
 # Tracer
 ggplot(poids_moyen, aes(x = date, y = poids)) +
   geom_point() +

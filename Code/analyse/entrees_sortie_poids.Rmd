@@ -93,14 +93,6 @@ modele_sorties <- lm(moyenne_valeur ~ date_num, data = sica_sorties)
 modele_segmente_entrees <- segmented(modele_entrees, seg.Z = ~ date_num, npsi = 4, silent = TRUE)
 modele_segmente_sorties <- segmented(modele_sorties, seg.Z = ~ date_num, npsi = 4, silent = TRUE)
 
-# Extraire les breakpoints
-breakpoints_entrees <- modele_segmente_entrees$psi[, "Est."]
-breakpoints_sorties <- modele_segmente_sorties$psi[, "Est."]
-
-# Convertir les breakpoints en dates réelles
-breakpoints_dates_entrees <- as.POSIXct(breakpoints_entrees, origin = "1970-01-01")
-breakpoints_dates_sorties <- as.POSIXct(breakpoints_sorties, origin = "1970-01-01")
-
 # Ajouter les prédictions des modèles segmentés
 sica_entrees$prediction <- predict(modele_segmente_entrees, newdata = data.frame(date_num = sica_entrees$date_num))
 sica_sorties$prediction <- predict(modele_segmente_sorties, newdata = data.frame(date_num = sica_sorties$date_num))
@@ -113,69 +105,94 @@ colnames(poids) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435",
                      "Sica - 412", "Sica - Y", "Sica - 89")
 
 # Sélectionner les colonnes nécessaires
-poids_sica <- poids[, c(1, (ncol(poids) - 5):ncol(poids))]
+poids_sica <- poids[, c(1, 8:13)]
 
-# Filtrer les données pour la date du 10 avril 2023
-poids_restreint1 <- subset(poids_sica, date <= "2023-04-11 02:00:00" & date >= "2023-04-10 02:00:00")
+# Extraire les données pour la rûche
+poids_restreint2 <- subset(poids_sica, date <= "2023-04-11 01:00:00" & date >= "2023-04-10 02:00:00")
 
-# Calculer le poids moyen
-poids_moyen1 <- data.frame(date = poids_restreint1$date, poids = rowMeans(poids_restreint1[,-1])) 
-poids_moyen1$date_num <- as.numeric(poids_restreint1$date)
+poids_moyen <- data.frame(date = poids_restreint2$date, poids = rowMeans(poids_restreint2[,-1])) 
 
-# Ajuster le modèle linéaire segmenté pour le poids moyen
-modele <- lm(poids ~ date_num, data = poids_moyen1)
+colnames(poids_restreint2)[2] <- "poids"
+
+poids_moyen$date_num <- as.numeric(poids_restreint2$date)
+modele <- lm(poids ~ date_num, data = poids_moyen)
+
 modele_segmente <- segmented(modele, seg.Z = ~date_num, npsi = 4, silent = TRUE)
 
-# Ajouter les prédictions du modèle segmenté du poids moyen
-poids_moyen1$prediction <- predict(modele_segmente, newdata = data.frame(date_num = poids_moyen1$date_num))
+# Extraire les breakpoints (estimation)
+breakpoints <- modele_segmente$psi[, "Est."]
+breakpoints <- sort(breakpoints)
 
+# Étendre les breakpoints avec début et fin
+breakpoints_all = c(min(poids_moyen$date_num), breakpoints, max(poids_moyen$date_num))
+breakpoints_dates = as.POSIXct(breakpoints_all, origin = "1970-01-01")
+
+# Prédictions du poids à ces points
+poids_preds <- predict(modele_segmente, newdata = data.frame(date_num = breakpoints_all))
+
+# Ajouter les prédictions du modèle segmenté du poids moyen
+poids_moyen$prediction <- predict(modele_segmente, newdata = data.frame(date_num = poids_moyen$date_num))
 
 #Tracé du graphe avec 2 axes des ordonnées
 
 # Trouver la plage des poids pour l'échelle
-min_poids <- min(poids_moyen1$poids, na.rm = TRUE)
-max_poids <- max(poids_moyen1$poids, na.rm = TRUE)
+BPmin_heure <- breakpoints_all[which.min(poids_preds)]
+BPmax_heure <- breakpoints_all[which.max(poids_preds)]
+
+# Corriger les prédictions des poids à ces breakpoints
+min_poids <- predict(modele_segmente, newdata = data.frame(date_num = BPmin_heure))
+max_poids <- predict(modele_segmente, newdata = data.frame(date_num = BPmax_heure))
+    
+# Trouver la plage des entrées/sorties pour l'échelle
+min_entrees_sorties <- min(c(sica_entrees$prediction, sica_sorties$prediction), na.rm = TRUE)
+max_entrees_sorties <- max(c(sica_entrees$prediction, sica_sorties$prediction), na.rm = TRUE)
 
 # Calculer la plage cible du graphe principal (y principal)
-max_diff <- max(abs(poids_moyen1$prediction), na.rm = TRUE)
+max_diff <- max(abs(poids_moyen$prediction), na.rm = TRUE)
 
 # Choisir un facteur d’échelle basé sur les plages
 scale_factor <- max(sica_entrees$prediction, sica_sorties$prediction, na.rm = TRUE) / 
                 (max_poids - min_poids)
 
+#Tracé du poids moyen
+graphe_poids <- data.frame(
+  date = breakpoints_dates,
+  poids = predict(modele_segmente, newdata = data.frame(date_num = breakpoints_dates))
+)
+
+# Ajouter une colonne y transformée
+graphe_poids$poids_rescale <- (graphe_poids$poids - min_poids) * scale_factor
+
+# Tracé
 graphique_global <- ggplot() +
-  
   # Entrées et sorties
-  geom_line(data = sica_entrees, aes(x = date, y = prediction, color = factor("Entrées")), size = 1) +
-  geom_line(data = sica_sorties, aes(x = date, y = prediction, color =factor("Sorties")), size = 1) +
+  geom_line(data = sica_entrees, aes(x = date, y = prediction, color = "Entrées"), size = 1) +
+  geom_line(data = sica_sorties, aes(x = date, y = prediction, color = "Sorties"), size = 1) +
   
-  # Poids moyen : mise à l’échelle fictive pour superposition
-  geom_line(data = poids_moyen1, aes(x = date, 
-                                    y = (prediction - min_poids) * scale_factor - max_diff,
-                                    color = factor("Poids moyen")), size = 1) +
+  geom_line(data = graphe_poids, aes(x = date, y = poids_rescale), color = "blue", size = 1) +
   
   # Double axe y
   scale_y_continuous(
     name = "Entrées / Sorties",
     sec.axis = sec_axis(
-      trans = ~ (. + max_diff) / scale_factor + min_poids,
-      name = "Poids moyen (en g)",
-      breaks = seq(floor(min_poids), ceiling(max_poids), by = 0.5)
-    )
+      trans = ~ . / scale_factor + min_poids,
+      name = "Poids moyen (g)",
+      breaks = seq(floor(min_poids), ceiling(max_poids), by = 0.4)
+      )
   ) +
   
   # Couleurs
-  scale_color_manual(values = c("Entrées" = "purple", 
-                                "Sorties" = "pink", 
-                                "Poids moyen" = "blue"),
-                     name = "") +
+  scale_color_manual(
+    values = c("Entrées" = "purple", "Sorties" = "pink", "Poids moyen" = "blue"),
+    name = ""
+  ) +
   
   scale_x_datetime(date_labels = "%H:%M") +
   labs(x = "Heure") +
   theme_minimal()
 
-print(graphique_global)
 
+print(graphique_global)
 ```
 
 
@@ -290,11 +307,11 @@ sica_long <- sica %>%
   )
 
 # Filtrer pour la date du 13 octobre 2023
-sica_13octobre <- sica_long %>%
+sica_13oct <- sica_long %>%
   filter(as.Date(date) == as.Date("2023-10-13"))
 
 # Calculer la moyenne des entrées et sorties à chaque instant
-sica_moyenne <- sica_13octobre %>%
+sica_moyenne <- sica_13oct %>%
   group_by(date, Mouvement) %>%
   summarise(moyenne_valeur = mean(valeur, na.rm = TRUE), .groups = "drop")
 
@@ -313,14 +330,6 @@ modele_sorties <- lm(moyenne_valeur ~ date_num, data = sica_sorties)
 modele_segmente_entrees <- segmented(modele_entrees, seg.Z = ~ date_num, npsi = 4, silent = TRUE)
 modele_segmente_sorties <- segmented(modele_sorties, seg.Z = ~ date_num, npsi = 4, silent = TRUE)
 
-# Extraire les breakpoints
-breakpoints_entrees <- modele_segmente_entrees$psi[, "Est."]
-breakpoints_sorties <- modele_segmente_sorties$psi[, "Est."]
-
-# Convertir les breakpoints en dates réelles
-breakpoints_dates_entrees <- as.POSIXct(breakpoints_entrees, origin = "1970-01-01")
-breakpoints_dates_sorties <- as.POSIXct(breakpoints_sorties, origin = "1970-01-01")
-
 # Ajouter les prédictions des modèles segmentés
 sica_entrees$prediction <- predict(modele_segmente_entrees, newdata = data.frame(date_num = sica_entrees$date_num))
 sica_sorties$prediction <- predict(modele_segmente_sorties, newdata = data.frame(date_num = sica_sorties$date_num))
@@ -333,68 +342,94 @@ colnames(poids) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435",
                      "Sica - 412", "Sica - Y", "Sica - 89")
 
 # Sélectionner les colonnes nécessaires
-poids_sica <- poids[, c(1, (ncol(poids) - 5):ncol(poids))]
+poids_sica <- poids[, c(1, 8:13)]
 
-# Filtrer les données pour la date du 10 avril 2023
-poids_restreint2 <- subset(poids_sica, date <= "2023-10-14 02:00:00" & date >= "2023-10-13 02:00:00")
+# Extraire les données pour la rûche
+poids_restreint2 <- subset(poids_sica, date <= "2023-10-14 01:00:00" & date >= "2023-10-13 02:00:00")
 
-# Calculer le poids moyen
-poids_moyen2 <- data.frame(date = poids_restreint2$date, poids = rowMeans(poids_restreint2[,-1])) 
-poids_moyen2$date_num <- as.numeric(poids_restreint2$date)
+poids_moyen <- data.frame(date = poids_restreint2$date, poids = rowMeans(poids_restreint2[,-1])) 
 
-# Ajuster le modèle linéaire segmenté pour le poids moyen
-modele <- lm(poids ~ date_num, data = poids_moyen2)
+colnames(poids_restreint2)[2] <- "poids"
+
+poids_moyen$date_num <- as.numeric(poids_restreint2$date)
+modele <- lm(poids ~ date_num, data = poids_moyen)
+
 modele_segmente <- segmented(modele, seg.Z = ~date_num, npsi = 4, silent = TRUE)
 
-# Ajouter les prédictions du modèle segmenté du poids moyen
-poids_moyen2$prediction <- predict(modele_segmente, newdata = data.frame(date_num = poids_moyen2$date_num))
+# Extraire les breakpoints (estimation)
+breakpoints <- modele_segmente$psi[, "Est."]
+breakpoints <- sort(breakpoints)
 
+# Étendre les breakpoints avec début et fin
+breakpoints_all = c(min(poids_moyen$date_num), breakpoints, max(poids_moyen$date_num))
+breakpoints_dates = as.POSIXct(breakpoints_all, origin = "1970-01-01")
+
+# Prédictions du poids à ces points
+poids_preds <- predict(modele_segmente, newdata = data.frame(date_num = breakpoints_all))
+
+# Ajouter les prédictions du modèle segmenté du poids moyen
+poids_moyen$prediction <- predict(modele_segmente, newdata = data.frame(date_num = poids_moyen$date_num))
 
 #Tracé du graphe avec 2 axes des ordonnées
 
 # Trouver la plage des poids pour l'échelle
-min_poids <- min(poids_moyen2$poids, na.rm = TRUE)
-max_poids <- max(poids_moyen2$poids, na.rm = TRUE)
+BPmin_heure <- breakpoints_all[which.min(poids_preds)]
+BPmax_heure <- breakpoints_all[which.max(poids_preds)]
+
+# Corriger les prédictions des poids à ces breakpoints
+min_poids <- predict(modele_segmente, newdata = data.frame(date_num = BPmin_heure))
+max_poids <- predict(modele_segmente, newdata = data.frame(date_num = BPmax_heure))
+    
+# Trouver la plage des entrées/sorties pour l'échelle
+min_entrees_sorties <- min(c(sica_entrees$prediction, sica_sorties$prediction), na.rm = TRUE)
+max_entrees_sorties <- max(c(sica_entrees$prediction, sica_sorties$prediction), na.rm = TRUE)
 
 # Calculer la plage cible du graphe principal (y principal)
-max_diff <- max(abs(poids_moyen2$prediction), na.rm = TRUE)
+max_diff <- max(abs(poids_moyen$prediction), na.rm = TRUE)
 
 # Choisir un facteur d’échelle basé sur les plages
 scale_factor <- max(sica_entrees$prediction, sica_sorties$prediction, na.rm = TRUE) / 
                 (max_poids - min_poids)
+
+#Tracé du poids moyen
+graphe_poids <- data.frame(
+  date = breakpoints_dates,
+  poids = predict(modele_segmente, newdata = data.frame(date_num = breakpoints_dates))
+)
+
+# Ajouter une colonne y transformée
+graphe_poids$poids_rescale <- (graphe_poids$poids - min_poids) * scale_factor
+
+# Tracé
 graphique_global <- ggplot() +
-  
   # Entrées et sorties
-  geom_line(data = sica_entrees, aes(x = date, y = prediction, color = factor("Entrées")), size = 1) +
-  geom_line(data = sica_sorties, aes(x = date, y = prediction, color =factor("Sorties")), size = 1) +
+  geom_line(data = sica_entrees, aes(x = date, y = prediction, color = "Entrées"), size = 1) +
+  geom_line(data = sica_sorties, aes(x = date, y = prediction, color = "Sorties"), size = 1) +
   
-  # Poids moyen : mise à l’échelle fictive pour superposition
-  geom_line(data = poids_moyen2, aes(x = date, 
-                                    y = (prediction - min_poids) * scale_factor,
-                                    color = factor("Poids moyen")), size = 1) +
+  geom_line(data = graphe_poids, aes(x = date, y = poids_rescale), color = "blue", size = 1) +
   
   # Double axe y
   scale_y_continuous(
     name = "Entrées / Sorties",
     sec.axis = sec_axis(
       trans = ~ . / scale_factor + min_poids,
-      name = "Poids moyen (en g)",
-      breaks = seq(floor(min_poids), ceiling(max_poids), by = 0.2)
-    )
+      name = "Poids moyen (g)",
+      breaks = seq(floor(min_poids), ceiling(max_poids), by = 0.4)
+      )
   ) +
   
   # Couleurs
-  scale_color_manual(values = c("Entrées" = "purple", 
-                                "Sorties" = "pink", 
-                                "Poids moyen" = "blue"),
-                     name = "") +
+  scale_color_manual(
+    values = c("Entrées" = "purple", "Sorties" = "pink", "Poids moyen" = "blue"),
+    name = ""
+  ) +
   
   scale_x_datetime(date_labels = "%H:%M") +
   labs(x = "Heure") +
   theme_minimal()
 
-print(graphique_global)
 
+print(graphique_global)
 ```
 
 
@@ -532,30 +567,69 @@ sica_moyenne$prediction <- predict(diff_modele_segmente, newdata = data.frame(da
 
 # Charger les données de poids des ruches
 poids <- read_excel("../../BD/Weight_2023_Sica_Confoux.xlsx")
-colnames(poids) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435", "Confoux - 430", "Confoux - 404", "Confoux - 405", "Sica - 415", "Sica - 428", "Sica - 444", "Sica - 412", "Sica - Y", "Sica - 89")
+colnames(poids) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435",
+                     "Confoux - 430", "Confoux - 404", "Confoux - 405",
+                     "Sica - 415", "Sica - 428", "Sica - 444",
+                     "Sica - 412", "Sica - Y", "Sica - 89")
 
-# Sélectionner et filtrer les données du poids
-poids_sica <- poids[, c(1, (ncol(poids) - 5):ncol(poids))]
-poids_restreint <- subset(poids_sica, date <= "2023-04-11 02:00:00" & date >= "2023-04-10 02:00:00")
+# Sélectionner les colonnes nécessaires
+poids_sica <- poids[, c(1, 8:13)]
 
-poids_moyen <- data.frame(date = poids_restreint$date, poids = rowMeans(poids_restreint[,-1])) 
-poids_moyen$date_num <- as.numeric(poids_restreint$date)
+# Extraire les données pour la rûche
+poids_restreint2 <- subset(poids_sica, date <= "2023-04-11 01:00:00" & date >= "2023-04-10 02:00:00")
 
-# Ajuster le modèle linéaire segmenté pour le poids moyen
+poids_moyen <- data.frame(date = poids_restreint2$date, poids = rowMeans(poids_restreint2[,-1])) 
+
+colnames(poids_restreint2)[2] <- "poids"
+
+poids_moyen$date_num <- as.numeric(poids_restreint2$date)
 modele <- lm(poids ~ date_num, data = poids_moyen)
+
 modele_segmente <- segmented(modele, seg.Z = ~date_num, npsi = 4, silent = TRUE)
+
+# Extraire les breakpoints (estimation)
+breakpoints <- modele_segmente$psi[, "Est."]
+breakpoints <- sort(breakpoints)
+
+# Étendre les breakpoints avec début et fin
+breakpoints_all = c(min(poids_moyen$date_num), breakpoints, max(poids_moyen$date_num))
+breakpoints_dates = as.POSIXct(breakpoints_all, origin = "1970-01-01")
+
+# Prédictions du poids à ces points
+poids_preds <- predict(modele_segmente, newdata = data.frame(date_num = breakpoints_all))
 
 # Ajouter les prédictions du modèle segmenté du poids moyen
 poids_moyen$prediction <- predict(modele_segmente, newdata = data.frame(date_num = poids_moyen$date_num))
-# Calculer les bornes utiles pour l’échelle secondaire
-min_poids <- min(poids_moyen$prediction, na.rm = TRUE)
-max_poids <- max(poids_moyen$prediction, na.rm = TRUE)
+
+#Tracé du graphe avec 2 axes des ordonnées
+
+# Trouver la plage des poids pour l'échelle
+BPmin_heure <- breakpoints_all[which.min(poids_preds)]
+BPmax_heure <- breakpoints_all[which.max(poids_preds)]
+
+# Corriger les prédictions des poids à ces breakpoints
+min_poids <- predict(modele_segmente, newdata = data.frame(date_num = BPmin_heure))
+max_poids <- predict(modele_segmente, newdata = data.frame(date_num = BPmax_heure))
+    
+# Trouver la plage des entrées/sorties pour l'échelle
+min_entrees_sorties <- min(sica_moyenne$prediction, na.rm = TRUE)
+max_entrees_sorties <- max(sica_moyenne$prediction, na.rm = TRUE)
 
 # Calculer la plage cible du graphe principal (y principal)
 max_diff <- max(abs(sica_moyenne$prediction), na.rm = TRUE)
 
 # Choisir un facteur d’échelle basé sur les plages
 scale_factor <- (2 * max_diff) / (max_poids - min_poids)
+
+
+#Tracé du poids moyen
+graphe_poids <- data.frame(
+  date = breakpoints_dates,
+  poids = predict(modele_segmente, newdata = data.frame(date_num = breakpoints_dates))
+)
+
+# Ajouter une colonne y transformée
+graphe_poids$poids_rescale <- (graphe_poids$poids - min_poids) * scale_factor - max_diff
 
 graphique_global <- ggplot() +
   
@@ -564,31 +638,22 @@ graphique_global <- ggplot() +
             aes(x = date, y = prediction, color = "Différence Entrées - Sorties"), 
             size = 1) +
   
-  # Poids moyen transformé
-  geom_line(data = poids_moyen, 
-            aes(x = date, 
-                y = (prediction - min_poids) * scale_factor - max_diff,
-                color = "Poids moyen"), 
-            size = 1) +
+  geom_line(data = graphe_poids, aes(x = date, y = poids_rescale), color = "blue", size = 1) +
   
   # Couleurs
-  scale_color_manual(values = c("Différence Entrées - Sorties" = "purple", 
-                                "Poids moyen" = "red"), name = '') +
+  scale_color_manual(values = c("Différence Entrées - Sorties" = "red", 
+                                "Poids moyen" = "blue"), name = '') +
   
-  # Axe x
   scale_x_datetime(date_labels = "%H:%M", name = "Heure") +
-  
-  # Axe y principal + secondaire
+  # Double axe y
   scale_y_continuous(
-    name = "Différence Entrées - Sorties",
+    name = "Entrées / Sorties",
     sec.axis = sec_axis(
       trans = ~ (. + max_diff) / scale_factor + min_poids,
-      name = "Poids moyen (en g)",
-      breaks = seq(floor(min_poids), ceiling(max_poids), by = 0.3)
-    )
+      name = "Poids moyen (g)",
+      breaks = seq(floor(min_poids), ceiling(max_poids), by = 0.2)
+      )
   ) +
-  
-  # Thème
   theme_minimal()
 
 print(graphique_global)
@@ -656,7 +721,7 @@ graphique_global <- ggplot() +
   geom_line(data = sica_moyenne, aes(x = date, y = prediction, color = "Différence Entrées - Sorties"), size = 1) +
   
   # Définir les couleurs pour la courbe
-  scale_color_manual(values = c("Différence Entrées - Sorties" = "purple"), name = "Mouvement") +
+  scale_color_manual(values = c("Différence Entrées - Sorties" = "red"), name = "Mouvement") +
   
   # Définir la palette de couleurs pour le poids
   scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Poids (en g)") +
@@ -724,30 +789,69 @@ sica_moyenne$prediction <- predict(diff_modele_segmente, newdata = data.frame(da
 
 # Charger les données de poids des ruches
 poids <- read_excel("../../BD/Weight_2023_Sica_Confoux.xlsx")
-colnames(poids) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435", "Confoux - 430", "Confoux - 404", "Confoux - 405", "Sica - 415", "Sica - 428", "Sica - 444", "Sica - 412", "Sica - Y", "Sica - 89")
+colnames(poids) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435",
+                     "Confoux - 430", "Confoux - 404", "Confoux - 405",
+                     "Sica - 415", "Sica - 428", "Sica - 444",
+                     "Sica - 412", "Sica - Y", "Sica - 89")
 
-# Sélectionner et filtrer les données du poids
-poids_sica <- poids[, c(1, (ncol(poids) - 5):ncol(poids))]
-poids_restreint <- subset(poids_sica, date <= "2023-10-14 02:00:00" & date >= "2023-10-13 02:00:00")
+# Sélectionner les colonnes nécessaires
+poids_sica <- poids[, c(1, 8:13)]
 
-poids_moyen <- data.frame(date = poids_restreint$date, poids = rowMeans(poids_restreint[,-1])) 
-poids_moyen$date_num <- as.numeric(poids_restreint$date)
+# Extraire les données pour la rûche
+poids_restreint2 <- subset(poids_sica, date <= "2023-10-14 01:00:00" & date >= "2023-10-13 02:00:00")
 
-# Ajuster le modèle linéaire segmenté pour le poids moyen
+poids_moyen <- data.frame(date = poids_restreint2$date, poids = rowMeans(poids_restreint2[,-1])) 
+
+colnames(poids_restreint2)[2] <- "poids"
+
+poids_moyen$date_num <- as.numeric(poids_restreint2$date)
 modele <- lm(poids ~ date_num, data = poids_moyen)
+
 modele_segmente <- segmented(modele, seg.Z = ~date_num, npsi = 4, silent = TRUE)
+
+# Extraire les breakpoints (estimation)
+breakpoints <- modele_segmente$psi[, "Est."]
+breakpoints <- sort(breakpoints)
+
+# Étendre les breakpoints avec début et fin
+breakpoints_all = c(min(poids_moyen$date_num), breakpoints, max(poids_moyen$date_num))
+breakpoints_dates = as.POSIXct(breakpoints_all, origin = "1970-01-01")
+
+# Prédictions du poids à ces points
+poids_preds <- predict(modele_segmente, newdata = data.frame(date_num = breakpoints_all))
 
 # Ajouter les prédictions du modèle segmenté du poids moyen
 poids_moyen$prediction <- predict(modele_segmente, newdata = data.frame(date_num = poids_moyen$date_num))
-# Calculer les bornes utiles pour l’échelle secondaire
-min_poids <- min(poids_moyen$prediction, na.rm = TRUE)
-max_poids <- max(poids_moyen$prediction, na.rm = TRUE)
+
+#Tracé du graphe avec 2 axes des ordonnées
+
+# Trouver la plage des poids pour l'échelle
+BPmin_heure <- breakpoints_all[which.min(poids_preds)]
+BPmax_heure <- breakpoints_all[which.max(poids_preds)]
+
+# Corriger les prédictions des poids à ces breakpoints
+min_poids <- predict(modele_segmente, newdata = data.frame(date_num = BPmin_heure))
+max_poids <- predict(modele_segmente, newdata = data.frame(date_num = BPmax_heure))
+    
+# Trouver la plage des entrées/sorties pour l'échelle
+min_entrees_sorties <- min(sica_moyenne$prediction, na.rm = TRUE)
+max_entrees_sorties <- max(sica_moyenne$prediction, na.rm = TRUE)
 
 # Calculer la plage cible du graphe principal (y principal)
 max_diff <- max(abs(sica_moyenne$prediction), na.rm = TRUE)
 
 # Choisir un facteur d’échelle basé sur les plages
 scale_factor <- (2 * max_diff) / (max_poids - min_poids)
+
+
+#Tracé du poids moyen
+graphe_poids <- data.frame(
+  date = breakpoints_dates,
+  poids = predict(modele_segmente, newdata = data.frame(date_num = breakpoints_dates))
+)
+
+# Ajouter une colonne y transformée
+graphe_poids$poids_rescale <- (graphe_poids$poids - min_poids) * scale_factor - max_diff
 
 graphique_global <- ggplot() +
   
@@ -756,16 +860,11 @@ graphique_global <- ggplot() +
             aes(x = date, y = prediction, color = "Différence Entrées - Sorties"), 
             size = 1) +
   
-  # Poids moyen transformé
-  geom_line(data = poids_moyen, 
-            aes(x = date, 
-                y = (prediction - min_poids) * scale_factor - max_diff,
-                color = "Poids moyen"), 
-            size = 1) +
+  geom_line(data = graphe_poids, aes(x = date, y = poids_rescale), color = "blue", size = 1) +
   
   # Couleurs
-  scale_color_manual(values = c("Différence Entrées - Sorties" = "purple", 
-                                "Poids moyen" = "red"), name = '') +
+  scale_color_manual(values = c("Différence Entrées - Sorties" = "red", 
+                                "Poids moyen" = "blue"), name = '') +
   
   # Axe x
   scale_x_datetime(date_labels = "%H:%M", name = "Heure") +
@@ -776,7 +875,7 @@ graphique_global <- ggplot() +
     sec.axis = sec_axis(
       trans = ~ (. + max_diff) / scale_factor + min_poids,
       name = "Poids moyen (en g)",
-      breaks = seq(floor(min_poids), ceiling(max_poids), by = 0.3)
+      breaks = seq(floor(min_poids), ceiling(max_poids), by = 0.2)
     )
   ) +
   
@@ -850,7 +949,7 @@ graphique_global <- ggplot() +
   geom_line(data = sica_moyenne, aes(x = date, y = prediction, color = "Différence Entrées - Sorties"), size = 1) +
   
   # Définir les couleurs pour la courbe
-  scale_color_manual(values = c("Différence Entrées - Sorties" = "purple"), name = "Mouvement") +
+  scale_color_manual(values = c("Différence Entrées - Sorties" = "red"), name = "Mouvement") +
   
   # Définir la palette de couleurs pour le poids
   scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Poids (en g)") +
