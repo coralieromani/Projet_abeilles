@@ -90,7 +90,7 @@ R2_pente = summary(modele_pente)$r.squared
 ggplot(breakpoints_table_filtre, aes(x = date, y = variation_poids)) +
   geom_point(color = "blue", size = 1) +
   geom_smooth(method = "lm", color = "red", se = FALSE) +
-  labs(x = "Jour", y = "Pente en gramme par heure") +
+  labs(x = "Jour", y = "Pente (en kg/h)") +
   scale_y_continuous(limits = c(-0.7, 0),
                      breaks = seq(-0.7, 0, by = 0.1)
   ) +

@@ -46,7 +46,7 @@ for (ruche in noms_ruches) {
     geom_point() +
     geom_line(aes(y = predict(modele_segmente, newdata = poids_restreint)), color = "blue") +
     geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "red") +  # Régression linéaire globale
-    labs(x = "Heure", y = "Poids moyen (en g)") +
+    labs(x = "Heure", y = "Poids moyen (en kg)") +
     theme_minimal()
   
     graphes_ruches[[ruche]] <- graphique
@@ -108,7 +108,7 @@ first_bp_date2 <- breakpoints_dates[4]
 # Tracer
 ggplot(poids_moyen, aes(x = date, y = poids)) +
   geom_point() +
-  labs(x = "Heure", y = "Poids moyen (en g)") +
+  labs(x = "Heure", y = "Poids moyen (en kg)") +
 
   # Segment 1
   geom_line(data = data.frame(date = c(end_date, first_bp_date),
@@ -191,7 +191,7 @@ last_bp_date <- breakpoints_dates[length(breakpoints)]
 # Tracer
 ggplot(poids_moyen, aes(x = date, y = poids)) +
   geom_point() +
-  labs(x = "Heure", y = "Poids moyen (en g)") +
+  labs(x = "Heure", y = "Poids moyen (en kg)") +
 
   # Segment 1
   geom_line(data = data.frame(date = c(end_date, first_bp_date),
@@ -217,4 +217,78 @@ ggplot(poids_moyen, aes(x = date, y = poids)) +
 ) +
   theme_minimal()
 
+```
+
+```{r, echo=FALSE, warning=FALSE}
+library(readxl)
+library(ggplot2)
+library(segmented)
+library(gridExtra)
+
+# Charger les données
+poids <- read_excel("../../BD/Weight_2023_Sica_Confoux.xlsx")
+
+colnames(poids) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435",
+                            "Confoux - 430", "Confoux - 404", "Confoux - 405",
+                            "Sica - 415", "Sica - 428", "Sica - 444",
+                            "Sica - 412", "Sica - Y", "Sica - 89")
+
+poids_sica <- poids[, c(1, 8:13)]
+
+# Extraire les données pour la rûche
+poids_restreint2 <- subset(poids_sica, date <= "2023-06-12 01:00:00" & date >= "2023-06-11 02:00:00")
+
+poids_moyen <- data.frame(date = poids_restreint2$date, poids = rowMeans(poids_restreint2[,-1])) 
+
+colnames(poids_restreint2)[2] <- "poids"
+
+poids_moyen$date_num <- as.numeric(poids_restreint2$date)
+modele <- lm(poids ~ date_num, data = poids_moyen)
+
+modele_segmente <- segmented(modele, seg.Z = ~date_num, npsi = 1, silent = TRUE)
+
+# Extraire les breakpoints (estimation)
+breakpoints <- modele_segmente$psi[, "Est."]
+
+# Convertir les breakpoints numériques en dates
+breakpoints_dates <- as.POSIXct(breakpoints)
+
+# Début et fin des données (réels)
+start_date <- poids_moyen$date[1]
+end_date <- poids_moyen$date[nrow(poids_moyen)]
+start_p <- poids_moyen$poids[1]
+end_p <- poids_moyen$poids[nrow(poids_moyen)]
+
+# Poids prédit aux premiers et derniers breakpoints
+first_bp_p <- predict(modele_segmente, newdata = data.frame(date_num = breakpoints[1]))
+last_bp_p <- predict(modele_segmente, newdata = data.frame(date_num = breakpoints[length(breakpoints)]))
+
+# Dates converties
+first_bp_date <- breakpoints_dates[1]
+first_bp_date2 <- breakpoints_dates[4]
+
+ggplot(poids_moyen, aes(x = date, y = poids)) +
+  geom_point() +
+  labs(x = "Heure", y = "Poids moyen (en kg)") +
+
+  # Segment 1 : du début au breakpoint
+  geom_line(data = data.frame(date = c(start_date, first_bp_date),
+                              poids = c(start_p, first_bp_p)),
+            aes(x = date, y = poids), color = "blue", size = 1) +
+
+  # Segment 2 : du breakpoint à la fin
+  geom_line(data = data.frame(date = c(first_bp_date, end_date),
+                              poids = c(first_bp_p, end_p)),
+            aes(x = date, y = poids), color = "blue", size = 1) +
+
+  # Point rouge pour le breakpoint
+  geom_point(data = data.frame(date = first_bp_date, poids = first_bp_p),
+             aes(x = date, y = poids), color = "red", size = 3) +
+
+  scale_x_datetime(
+    labels = scales::date_format("%H:%M"),
+    limits = c(as.POSIXct("2023-06-11 00:00:00"),
+               as.POSIXct("2023-06-12 01:00:00"))
+  ) +
+  theme_minimal()
 ```

@@ -43,7 +43,7 @@ breakpoints_dates <- as.POSIXct(breakpoints)
 # Tracer le graphique avec la régression linéaire segmentée
 ggplot(poids_moyen2, aes(x = date, y = poids)) +
   geom_line(aes(y = predict(modele_segmente, newdata = poids_moyen2)), color = "blue") +
-  labs(x = "Heure", y = "Poids moyen (en g)") +
+  labs(x = "Heure", y = "Poids moyen (en kg)") +
   scale_x_datetime(labels = scales::date_format("%H:%M")) +
   theme_minimal()
 
@@ -169,14 +169,14 @@ graphique_global <- ggplot() +
   geom_line(data = sica_entrees, aes(x = date, y = prediction, color = "Entrées"), size = 1) +
   geom_line(data = sica_sorties, aes(x = date, y = prediction, color = "Sorties"), size = 1) +
   
-  geom_line(data = graphe_poids, aes(x = date, y = poids_rescale), color = "blue", size = 1) +
+  geom_line(data = graphe_poids, aes(x = date, y = poids_rescale, color = "Poids moyen"), size = 1) +
   
   # Double axe y
   scale_y_continuous(
     name = "Entrées / Sorties",
     sec.axis = sec_axis(
       trans = ~ . / scale_factor + min_poids,
-      name = "Poids moyen (g)",
+      name = "Poids moyen (en kg)",
       breaks = seq(floor(min_poids), ceiling(max_poids), by = 0.4)
       )
   ) +
@@ -271,7 +271,7 @@ graphique_global <- ggplot() +
   scale_color_manual(values = c("Entrées" = "purple", "Sorties" = "pink"), name = "Mouvement") +
   
   # Définir la palette de couleurs pour le poids
-  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Poids (en g)") +
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Poids (en kg)") +
   
   # Définir l'échelle de l'axe x
   scale_x_datetime(date_labels = "%H:%M", name = "Heure") +
@@ -406,14 +406,14 @@ graphique_global <- ggplot() +
   geom_line(data = sica_entrees, aes(x = date, y = prediction, color = "Entrées"), size = 1) +
   geom_line(data = sica_sorties, aes(x = date, y = prediction, color = "Sorties"), size = 1) +
   
-  geom_line(data = graphe_poids, aes(x = date, y = poids_rescale), color = "blue", size = 1) +
+  geom_line(data = graphe_poids, aes(x = date, y = poids_rescale, color = "Poids moyen"), size = 1) +
   
   # Double axe y
   scale_y_continuous(
     name = "Entrées / Sorties",
     sec.axis = sec_axis(
       trans = ~ . / scale_factor + min_poids,
-      name = "Poids moyen (g)",
+      name = "Poids moyen (en kg)",
       breaks = seq(floor(min_poids), ceiling(max_poids), by = 0.4)
       )
   ) +
@@ -508,7 +508,7 @@ graphique_global <- ggplot() +
   scale_color_manual(values = c("Entrées" = "purple", "Sorties" = "pink"), name = "Mouvement") +
   
   # Définir la palette de couleurs pour le poids
-  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Poids (en g)") +
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Poids (en kg)") +
   
   # Définir l'échelle de l'axe x
   scale_x_datetime(date_labels = "%H:%M", name = "Heure") +
@@ -638,7 +638,7 @@ graphique_global <- ggplot() +
             aes(x = date, y = prediction, color = "Différence Entrées - Sorties"), 
             size = 1) +
   
-  geom_line(data = graphe_poids, aes(x = date, y = poids_rescale), color = "blue", size = 1) +
+  geom_line(data = graphe_poids, aes(x = date, y = poids_rescale, color = "Poids moyen"), size = 1) +
   
   # Couleurs
   scale_color_manual(values = c("Différence Entrées - Sorties" = "red", 
@@ -650,7 +650,7 @@ graphique_global <- ggplot() +
     name = "Entrées / Sorties",
     sec.axis = sec_axis(
       trans = ~ (. + max_diff) / scale_factor + min_poids,
-      name = "Poids moyen (g)",
+      name = "Poids moyen (en kg)",
       breaks = seq(floor(min_poids), ceiling(max_poids), by = 0.2)
       )
   ) +
@@ -724,7 +724,7 @@ graphique_global <- ggplot() +
   scale_color_manual(values = c("Différence Entrées - Sorties" = "red"), name = "Mouvement") +
   
   # Définir la palette de couleurs pour le poids
-  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Poids (en g)") +
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Poids (en kg)") +
   
   # Définir l'échelle de l'axe x
   scale_x_datetime(date_labels = "%H:%M", name = "Heure") +
@@ -860,7 +860,7 @@ graphique_global <- ggplot() +
             aes(x = date, y = prediction, color = "Différence Entrées - Sorties"), 
             size = 1) +
   
-  geom_line(data = graphe_poids, aes(x = date, y = poids_rescale), color = "blue", size = 1) +
+  geom_line(data = graphe_poids, aes(x = date, y = poids_rescale, color = "Poids moyen"), size = 1) +
   
   # Couleurs
   scale_color_manual(values = c("Différence Entrées - Sorties" = "red", 
@@ -874,7 +874,7 @@ graphique_global <- ggplot() +
     name = "Différence Entrées - Sorties",
     sec.axis = sec_axis(
       trans = ~ (. + max_diff) / scale_factor + min_poids,
-      name = "Poids moyen (en g)",
+      name = "Poids moyen (en kg)",
       breaks = seq(floor(min_poids), ceiling(max_poids), by = 0.2)
     )
   ) +
@@ -952,7 +952,7 @@ graphique_global <- ggplot() +
   scale_color_manual(values = c("Différence Entrées - Sorties" = "red"), name = "Mouvement") +
   
   # Définir la palette de couleurs pour le poids
-  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Poids (en g)") +
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Poids (en kg)") +
   
   # Définir l'échelle de l'axe x
   scale_x_datetime(date_labels = "%H:%M", name = "Heure") +

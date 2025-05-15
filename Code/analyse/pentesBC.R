@@ -97,7 +97,7 @@ ggplot() +
   ) +
   labs(
     #title = "Pentes entre BP1 et BP2 (Breakfast Canyon)",
-    y = "Variation de poids (en g, centrée à 0)"
+    y = "Variation de poids (en kg, centrée à 0)"
   ) +
   theme_minimal()
 
