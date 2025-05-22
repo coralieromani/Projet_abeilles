@@ -271,7 +271,9 @@ graphique_global <- ggplot() +
   scale_color_manual(values = c("Entrées" = "purple", "Sorties" = "pink"), name = "Mouvement") +
   
   # Définir la palette de couleurs pour le poids
-  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Poids (en kg)") +
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Poids (en kg)",breaks = seq(min(poids_moyen1$poids, na.rm = TRUE), 
+               max(poids_moyen1$poids, na.rm = TRUE), 
+               length.out = 3),labels = function(x) sprintf("%.1f kg", x) ) +
   
   # Définir l'échelle de l'axe x
   scale_x_datetime(date_labels = "%H:%M", name = "Heure") +
@@ -508,7 +510,7 @@ graphique_global <- ggplot() +
   scale_color_manual(values = c("Entrées" = "purple", "Sorties" = "pink"), name = "Mouvement") +
   
   # Définir la palette de couleurs pour le poids
-  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Poids (en kg)") +
+  scale_fill_gradient(low = "white", high = "darkblue", name = "Poids (en kg)") +
   
   # Définir l'échelle de l'axe x
   scale_x_datetime(date_labels = "%H:%M", name = "Heure") +
@@ -647,7 +649,7 @@ graphique_global <- ggplot() +
   scale_x_datetime(date_labels = "%H:%M", name = "Heure") +
   # Double axe y
   scale_y_continuous(
-    name = "Entrées / Sorties",
+    name = "Différence Entrées - Sorties",
     sec.axis = sec_axis(
       trans = ~ (. + max_diff) / scale_factor + min_poids,
       name = "Poids moyen (en kg)",
@@ -724,7 +726,9 @@ graphique_global <- ggplot() +
   scale_color_manual(values = c("Différence Entrées - Sorties" = "red"), name = "Mouvement") +
   
   # Définir la palette de couleurs pour le poids
-  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Poids (en kg)") +
+scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Poids (en kg)",breaks = seq(min(poids_moyen1$poids, na.rm = TRUE), 
+               max(poids_moyen1$poids, na.rm = TRUE), 
+               length.out = 3),labels = function(x) sprintf("%.1f kg", x) ) +
   
   # Définir l'échelle de l'axe x
   scale_x_datetime(date_labels = "%H:%M", name = "Heure") +

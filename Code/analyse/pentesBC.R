@@ -86,17 +86,27 @@ for (i in 1:nrow(breakpoints_table_filtered)) {
   ))
 }
 
+segments_plot$heure_numeric <- as.numeric(substr(segments_plot$heure_debut, 1, 2)) +
+  as.numeric(substr(segments_plot$heure_debut, 4, 5)) / 60
+
+
 # Graphique avec les lignes et les points filtrés
 ggplot() +
-  geom_line(data = segments_plot, aes(x = x, y = y, group = segment_id, color = heure_debut), alpha = 0.8, linewidth = 0.8) +
-  scale_color_viridis_d() +
-  guides(color = "none") +
+  geom_line(data = segments_plot, aes(x = x, y = y, group = segment_id, color = heure_numeric), alpha = 0.8, linewidth = 0.8) +
+  scale_color_viridis_c(
+    name = "Heure du début de la pente",
+    limits = c(4, 16),
+    breaks = seq(4, 16, by = 3),
+    labels = function(x) sprintf("%02d:00", x),
+    begin = 0,   # commence à 30% de la palette
+    end = 1,
+    option = "D"# termine à 80%
+  ) +
   scale_x_discrete(
     name = "Heure",
     breaks = c("04:00", "06:00", "08:00", "10:00", "12:00", "14:00", "16:00", "18:00")
   ) +
   labs(
-    #title = "Pentes entre BP1 et BP2 (Breakfast Canyon)",
     y = "Variation de poids (en kg, centrée à 0)"
   ) +
   theme_minimal()
