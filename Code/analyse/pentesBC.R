@@ -3,9 +3,7 @@ library(segmented)
 library(dplyr)
 library(ggplot2)
 library(tidyr)
-library(gridExtra)
 library(lubridate)
-library(fuzzyjoin)
 
 breakpoints_table <- readRDS("tables/breakpoints_table.rds")
 sica_diff <- readRDS("tables/sica_diff.rds")
@@ -49,7 +47,6 @@ ggplot() +
     breaks = c("04:00", "06:00", "08:00", "10:00", "12:00", "14:00", "16:00", "18:00")
   ) +
   labs(
-    title = "Pentes entre BP1 et BP2 (Breakfast Canyon)",
     y = "Variation de poids (g, centrée à 0)"
   ) +
   theme_minimal()
@@ -124,7 +121,11 @@ bp_10avril <- breakpoints_table_ext %>% filter(as.Date(date) %in% as.Date(c("202
 
 bp2_10avril = tibble(x=c(bp_10avril$heure_BP_1,bp_10avril$heure_BP_2),y=c(bp_10avril$diff_ES_BP_1,bp_10avril$diff_ES_BP_2))
 
-diff_modele <- lm(diff_ES ~ heure, data = sica_10avril)
+sica_13oct <- sica_diff %>% filter(as.Date(date) %in% as.Date(c("2023-10-13")))
+
+bp_13oct <- breakpoints_table_ext %>% filter(as.Date(date) %in% as.Date(c("2023-10-13")))
+
+bp2_13oct = tibble(x=c(bp_13oct$heure_BP_1,bp_13oct$heure_BP_2),y=c(bp_13oct$diff_ES_BP_1,bp_13oct$diff_ES_BP_2))
 
 ggplot(sica_10avril, aes(x = heure)) +
   geom_ribbon(data = sica_13oct %>% filter(heure >= bp_10avril$heure_BP_1 & heure <= bp_10avril$heure_BP_2),
@@ -142,15 +143,6 @@ ggplot(sica_10avril, aes(x = heure)) +
     labels = function(x) format(as.POSIXct(x * 60, origin = "1970-01-01", tz = "UTC"), "%H:%M")  # Format HH:MM
   ) +theme_minimal()
 
-
-# Filtrer pour la date du 13 octobre 2023
-sica_13oct <- sica_diff %>% filter(as.Date(date) %in% as.Date(c("2023-10-13")))
-
-bp_13oct <- breakpoints_table_ext %>% filter(as.Date(date) %in% as.Date(c("2023-10-13")))
-
-bp2_13oct = tibble(x=c(bp_13oct$heure_BP_1,bp_13oct$heure_BP_2),y=c(bp_13oct$diff_ES_BP_1,bp_13oct$diff_ES_BP_2))
-
-diff_modele <- lm(diff_ES ~ heure, data = sica_13oct)
 
 ggplot(sica_13oct, aes(x = heure)) +
   # Transparence

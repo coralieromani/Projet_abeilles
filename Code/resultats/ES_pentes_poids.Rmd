@@ -4,11 +4,8 @@ library(segmented)
 library(dplyr)
 library(ggplot2)
 library(tidyr)
-library(gridExtra)
 library(lubridate)
-library(fuzzyjoin)
 ```
-
 
 ```{r}
 Sys.setlocale("LC_TIME", "fr_FR.UTF-8")

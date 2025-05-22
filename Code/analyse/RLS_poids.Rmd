@@ -61,7 +61,6 @@ for (ruche in noms_ruches) {
 library(readxl)
 library(ggplot2)
 library(segmented)
-library(gridExtra)
 
 # Charger les données
 poids <- read_excel("../../BD/Weight_2023_Sica_Confoux.xlsx")

@@ -25,7 +25,7 @@ Les résultats sont visualisés sous forme de graphiques, mettant en relation :
 ## Outils utilisés
 
 - Langage : **R** pour l’analyse statistique et la visualisation
-- Bibliothèques : **ggplot2**, **segmented**, **dplyr**, **gridExtra**, **readxl**, **dplyr**, **tidyr**, **patchwork**, **lubridate**
+- Bibliothèques : **ggplot2**, **segmented**, **dplyr**, **readxl**, **tidyr**, **lubridate**
 - Éditeurs : **RStudio**, **GitHub**
 
 ## Références

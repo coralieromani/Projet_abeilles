@@ -62,18 +62,18 @@ annot_x <- min_date + (max_date - min_date) * 0.7
 
 # Graphique
 ggplot(breakpoints_table, aes(x = date)) +
-  geom_point(aes(y = BP_1_numeric, color = "Breakpoint B")) +
-  geom_point(aes(y = BP_2_numeric, color = "Breakpoint C")) +
+  geom_point(aes(y = BP_1_numeric, color = "Breakpoint 1")) +
+  geom_point(aes(y = BP_2_numeric, color = "Breakpoint 2")) +
   geom_line(aes(y = BP_1_trend), color = "darkgreen", size = 1) +
   geom_line(aes(y = BP_2_trend), color = "#D5006D", size = 1) +
   labs(x = "Jour", y = "Heure") +
   scale_y_continuous(breaks = seq(0, 24, by = 1), limits = c(0, 24)) +
-  scale_color_manual(values = c("Breakpoint B" = "green", "Breakpoint C" = "pink"), name = "Breakpoints") +
+  scale_color_manual(values = c("Breakpoint 1" = "green", "Breakpoint 2" = "pink"), name = "Breakpoints") +
   theme_minimal()
 
 ggplot(breakpoints_table, aes(x = date, y = variation_poids)) +
   geom_point(color = "blue") +
-  labs(x = "Jour", y = "Pente en gramme par heure") +
+  labs(x = "Jour", y = "Pente (en kg/h") +
   scale_y_continuous(breaks = seq(min(breakpoints_table$variation_poids),
                                   max(breakpoints_table$variation_poids),
                                   by = 1)) +

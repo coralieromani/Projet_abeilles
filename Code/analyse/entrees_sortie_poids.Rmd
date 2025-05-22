@@ -4,52 +4,6 @@ output: html_document
 date: "2025-04-02"
 ---
 
-# RLS sur moyenne poids des ruches sur un jour
-
-```{r, echo=FALSE, warning=FALSE}
-library(readxl)
-library(ggplot2)
-library(segmented)
-library(gridExtra)
-
-# Charger les données
-poids <- read_excel("../../BD/Weight_2023_Sica_Confoux.xlsx")
-
-colnames(poids) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435",
-                            "Confoux - 430", "Confoux - 404", "Confoux - 405",
-                            "Sica - 415", "Sica - 428", "Sica - 444",
-                            "Sica - 412", "Sica - Y", "Sica - 89")
-
-poids_sica <- poids[, c(1, (ncol(poids) - 5):ncol(poids))]
-
-# Extraire les données pour la rûche
-poids_restreint2 <- subset(poids_sica, date <= "2023-10-13 23:00:00" & date >= "2023-10-13 00:00:00")
-
-poids_moyen2 <- data.frame(date = poids_restreint2$date, poids = rowMeans(poids_restreint2[,-1])) 
-
-colnames(poids_restreint2)[2] <- "poids"
-
-poids_moyen2$date_num <- as.numeric(poids_restreint2$date)
-modele <- lm(poids ~ date_num, data = poids_moyen2)
-
-modele_segmente <- segmented(modele, seg.Z = ~date_num, npsi = 4, silent = TRUE)
-
-# Extraire les breakpoints (estimation)
-breakpoints <- modele_segmente$psi[, "Est."]
-
-# Convertir les breakpoints numériques en dates
-breakpoints_dates <- as.POSIXct(breakpoints)
-
-# Tracer le graphique avec la régression linéaire segmentée
-ggplot(poids_moyen2, aes(x = date, y = poids)) +
-  geom_line(aes(y = predict(modele_segmente, newdata = poids_moyen2)), color = "blue") +
-  labs(x = "Heure", y = "Poids moyen (en kg)") +
-  scale_x_datetime(labels = scales::date_format("%H:%M")) +
-  theme_minimal()
-
-```
-
-
 #entrées/sorties et poids pour le 10 avril 2023
 ```{r, echo=FALSE, warning=FALSE}
 library(readxl)

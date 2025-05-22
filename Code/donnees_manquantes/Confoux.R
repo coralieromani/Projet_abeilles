@@ -2,7 +2,6 @@
 library(readxl)
 library(dplyr)
 library(tidyr)
-library(openxlsx)
 library(lubridate)
 
 confoux <- read_excel("BD/Activity_Confoux_2023.xlsx")
