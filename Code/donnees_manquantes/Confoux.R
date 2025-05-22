@@ -67,5 +67,3 @@ for (i in 1:nrow(confoux_missing_periods_filtered)) {
   final_table[final_table$Plage == plage, compteur] <- "X"
 }
 
-saveRDS(final_table, "confoux_donnees_manquantes.rds")
-
