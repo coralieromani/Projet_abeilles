@@ -44,9 +44,9 @@ for (ruche in noms_ruches) {
   graphique <- ggplot(poids_restreint, aes(x = date, y = poids)) +
     geom_point() +
     scale_y_continuous(limits = c(44.8, 46.4)) +
-    geom_line(aes(y = predict(modele_segmente, newdata = poids_restreint)), color = "blue") +
-    geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "red") +  # Régression linéaire globale
-    labs(x = "Heure", y = "Poids moyen (en kg)") +
+    #geom_line(aes(y = predict(modele_segmente, newdata = poids_restreint)), color = "blue") +
+    #geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "red") +  # Régression linéaire globale
+    labs(x = "Heure", y = "Poids (en kg)") +
     theme_minimal()
   
     graphes_ruches[[ruche]] <- graphique
