@@ -21,8 +21,7 @@ colnames(poids) <- c("date", "Confoux - 412", "Confoux - 409", "Confoux - 435",
                             "Sica - 415", "Sica - 428", "Sica - 444",
                             "Sica - 412", "Sica - Y", "Sica - 89")
 
-poids_sica <- poids %>%
-  select(1,(ncol(poids)-5):ncol(poids))
+poids_sica <- poids[, c(1, 8:13)]
 
 # Créer une liste des noms des ruches (ajuster si nécessaire)
 noms_ruches <- colnames(poids_sica)[2:7]
@@ -44,6 +43,7 @@ for (ruche in noms_ruches) {
   # Créer le graphique
   graphique <- ggplot(poids_restreint, aes(x = date, y = poids)) +
     geom_point() +
+    scale_y_continuous(limits = c(44.8, 46.4)) +
     geom_line(aes(y = predict(modele_segmente, newdata = poids_restreint)), color = "blue") +
     geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "red") +  # Régression linéaire globale
     labs(x = "Heure", y = "Poids moyen (en kg)") +
